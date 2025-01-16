@@ -1,0 +1,33 @@
+plugins {
+    id 'java-library'
+    id 'org.springframework.boot' version '3.4.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+def major = '0'
+def minor = '0'
+def patch = '0'
+
+group = 'io.github.keyhub-projects'
+version = major + '.' + minor + '.' + patch
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api 'org.springframework.boot:spring-boot-starter-webflux:3.4.0'
+    api 'org.springframework.boot:spring-boot-starter-test'
+    api 'io.projectreactor:reactor-test'
+    api 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
