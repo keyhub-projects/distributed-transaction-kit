@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="false" project-jdk-name="corretto-21" project-jdk-type="JavaSDK" />
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="jdk-21.0.2-corretto-21.0.2-3183f394aec4-abb9e59b" />
-      </set>
-    </attachedChunks>
-  </component>
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="corretto-21" project-jdk-type="JavaSDK" />
 </project>
