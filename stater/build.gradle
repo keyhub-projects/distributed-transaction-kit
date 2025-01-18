@@ -22,10 +22,8 @@ repositories {
 }
 
 dependencies {
-    api 'org.springframework.boot:spring-boot-starter-webflux:3.4.0'
-    api 'org.springframework.boot:spring-boot-starter-test'
-    api 'io.projectreactor:reactor-test'
-    api 'org.junit.platform:junit-platform-launcher'
+    api project(":core")
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
 }
 
 tasks.named('test') {
