@@ -1,8 +1,8 @@
-package keyhub.distributedtransactionkit.core.outbox;
+package keyhub.distributedtransactionkit.core.context.outbox;
 
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 
-public interface OutboxTransactionStore {
+public interface OutboxStore {
 
     void add(KhTransaction outboxTransaction);
 }

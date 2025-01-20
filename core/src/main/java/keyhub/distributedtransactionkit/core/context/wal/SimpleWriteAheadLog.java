@@ -1,4 +1,4 @@
-package keyhub.distributedtransactionkit.core.wal;
+package keyhub.distributedtransactionkit.core.context.wal;
 
 import lombok.Getter;
 

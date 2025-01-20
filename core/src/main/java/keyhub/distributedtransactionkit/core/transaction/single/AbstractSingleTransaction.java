@@ -1,8 +1,8 @@
 package keyhub.distributedtransactionkit.core.transaction.single;
 
 import keyhub.distributedtransactionkit.core.KhTransactionException;
-import keyhub.distributedtransactionkit.core.compensation.CompensatingTransactionStore;
-import keyhub.distributedtransactionkit.core.outbox.OutboxTransactionStore;
+import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
+import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
 import keyhub.distributedtransactionkit.core.transaction.AbstractTransaction;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 
@@ -15,7 +15,7 @@ public abstract class AbstractSingleTransaction extends AbstractTransaction impl
     protected KhTransactionException exception;
     protected Object rawResult;
 
-    protected AbstractSingleTransaction(CompensatingTransactionStore compensatingTransactionStore, OutboxTransactionStore outboxTransactionStore) {
+    protected AbstractSingleTransaction(CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
         super(compensatingTransactionStore, outboxTransactionStore);
     }
 

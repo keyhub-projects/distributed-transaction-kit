@@ -2,8 +2,8 @@ package keyhub.distributedtransactionkit.core.transaction.composite;
 
 import keyhub.distributedtransactionkit.core.KhTransactionException;
 import keyhub.distributedtransactionkit.core.RemoteTransactionException;
-import keyhub.distributedtransactionkit.core.compensation.CompensatingTransactionStore;
-import keyhub.distributedtransactionkit.core.outbox.OutboxTransactionStore;
+import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
+import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
 import keyhub.distributedtransactionkit.core.transaction.AbstractTransaction;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
@@ -18,7 +18,7 @@ public class SimpleCompositeTransaction extends AbstractTransaction implements C
     protected KhTransaction outboxTransaction;
     protected RemoteTransactionException exception;
 
-    protected SimpleCompositeTransaction(CompensatingTransactionStore compensatingTransactionStore, OutboxTransactionStore outboxTransactionStore) {
+    protected SimpleCompositeTransaction(CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
         super(compensatingTransactionStore, outboxTransactionStore);
         this.transactionIdMap = new HashMap<>();
     }

@@ -1,7 +1,7 @@
 package keyhub.distributedtransactionkit.core.transaction.single;
 
-import keyhub.distributedtransactionkit.core.compensation.CompensatingTransactionStore;
-import keyhub.distributedtransactionkit.core.outbox.OutboxTransactionStore;
+import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
+import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 
 import java.util.function.Supplier;
@@ -12,7 +12,7 @@ public interface SingleTransaction extends KhTransaction {
         return SimpleSingleTransaction.of(transactionProcess);
     }
 
-    static <R extends KhTransaction.Result> SimpleSingleTransaction<R> of(Supplier<R> transactionProcess, CompensatingTransactionStore compensatingTransactionStore, OutboxTransactionStore outboxTransactionStore) {
+    static <R extends KhTransaction.Result> SimpleSingleTransaction<R> of(Supplier<R> transactionProcess, CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
         return SimpleSingleTransaction.of(transactionProcess, compensatingTransactionStore, outboxTransactionStore);
     }
 

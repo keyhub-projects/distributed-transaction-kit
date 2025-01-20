@@ -1,8 +1,8 @@
 package keyhub.distributedtransactionkit.core.transaction.single;
 
 import keyhub.distributedtransactionkit.core.KhTransactionException;
-import keyhub.distributedtransactionkit.core.compensation.CompensatingTransactionStore;
-import keyhub.distributedtransactionkit.core.outbox.OutboxTransactionStore;
+import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
+import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 
 import java.util.function.Supplier;
@@ -28,7 +28,7 @@ public class SimpleSingleTransaction<R extends KhTransaction.Result> extends Abs
         this.transactionProcess = transactionProcess;
     }
 
-    public SimpleSingleTransaction(Supplier<R> transactionProcess, CompensatingTransactionStore compensatingTransactionStore, OutboxTransactionStore outboxTransactionStore) {
+    public SimpleSingleTransaction(Supplier<R> transactionProcess, CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
         super(compensatingTransactionStore, outboxTransactionStore);
         this.transactionProcess = transactionProcess;
     }
@@ -37,7 +37,7 @@ public class SimpleSingleTransaction<R extends KhTransaction.Result> extends Abs
         return new SimpleSingleTransaction<>(transactionProcess);
     }
 
-    public static <R extends KhTransaction.Result> SimpleSingleTransaction<R> of(Supplier<R> transactionProcess, CompensatingTransactionStore compensatingTransactionStore, OutboxTransactionStore outboxTransactionStore) {
+    public static <R extends KhTransaction.Result> SimpleSingleTransaction<R> of(Supplier<R> transactionProcess, CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
         return new SimpleSingleTransaction<>(transactionProcess, compensatingTransactionStore, outboxTransactionStore);
     }
 }

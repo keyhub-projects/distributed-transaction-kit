@@ -3,8 +3,8 @@ package keyhub.distributedtransactionkit.core.transaction.remote;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import keyhub.distributedtransactionkit.core.KhTransactionException;
-import keyhub.distributedtransactionkit.core.compensation.CompensatingTransactionStore;
-import keyhub.distributedtransactionkit.core.outbox.OutboxTransactionStore;
+import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
+import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
 import keyhub.distributedtransactionkit.core.RemoteTransactionException;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import lombok.AllArgsConstructor;
@@ -27,11 +27,11 @@ import java.util.stream.Collectors;
 public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
     private Request request;
 
-    SimpleRemoteTransaction(CompensatingTransactionStore compensatingTransactionStore, OutboxTransactionStore outboxTransactionStore, ObjectMapper objectMapper) {
+    SimpleRemoteTransaction(CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore, ObjectMapper objectMapper) {
         super(compensatingTransactionStore, outboxTransactionStore, objectMapper);
     }
 
-    SimpleRemoteTransaction(CompensatingTransactionStore compensatingTransactionStore, OutboxTransactionStore outboxTransactionStore) {
+    SimpleRemoteTransaction(CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
         super(compensatingTransactionStore, outboxTransactionStore);
     }
 
@@ -43,11 +43,11 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
         return new SimpleRemoteTransaction();
     }
 
-    public static SimpleRemoteTransaction of (CompensatingTransactionStore compensatingTransactionStore, OutboxTransactionStore outboxTransactionStore) {
+    public static SimpleRemoteTransaction of (CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
         return new SimpleRemoteTransaction(compensatingTransactionStore, outboxTransactionStore);
     }
 
-    public static SimpleRemoteTransaction of(CompensatingTransactionStore compensatingTransactionStore, OutboxTransactionStore outboxTransactionStore, ObjectMapper objectMapper) {
+    public static SimpleRemoteTransaction of(CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore, ObjectMapper objectMapper) {
         return new SimpleRemoteTransaction(compensatingTransactionStore, outboxTransactionStore, objectMapper);
     }
 
