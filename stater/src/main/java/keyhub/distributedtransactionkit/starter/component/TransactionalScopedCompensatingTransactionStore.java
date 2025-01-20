@@ -1,11 +1,11 @@
 package keyhub.distributedtransactionkit.starter.component;
 
 import keyhub.distributedtransactionkit.core.compensation.AbstractCompensatingTransactionStore;
-import keyhub.distributedtransactionkit.core.transaction.RemoteTransaction;
+import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 
 public class TransactionalScopedCompensatingTransactionStore extends AbstractCompensatingTransactionStore {
     @Override
-    public void add(RemoteTransaction compensationTransaction) {
+    public void add(KhTransaction compensationTransaction) {
 
     }
 

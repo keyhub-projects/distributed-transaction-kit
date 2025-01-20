@@ -1,9 +1,9 @@
 package keyhub.distributedtransactionkit.core.compensation;
 
-import keyhub.distributedtransactionkit.core.transaction.RemoteTransaction;
+import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 
 public interface CompensatingTransactionStore {
-    void add(RemoteTransaction compensationTransaction);
+    void add(KhTransaction compensationTransaction);
     void compensate();
     void clear();
 }

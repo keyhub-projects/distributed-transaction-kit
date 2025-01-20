@@ -1,6 +1,6 @@
 package keyhub.distributedtransactionkit.core;
 
-public class RemoteTransactionException extends Exception {
+public class RemoteTransactionException extends KhTransactionException {
     public RemoteTransactionException() {}
     public RemoteTransactionException(String message) {
         super(message);
