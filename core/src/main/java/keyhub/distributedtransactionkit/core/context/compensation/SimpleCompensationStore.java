@@ -9,22 +9,23 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SimpleCompensationStore implements CompensationStore {
     private final Map<TransactionId, KhTransaction> compensations;
 
-    public SimpleCompensationStore() {
-        this.compensations = new ConcurrentHashMap<>();
+    SimpleCompensationStore(Map<TransactionId, KhTransaction> compensations) {
+        this.compensations = compensations;
+    }
+
+    static SimpleCompensationStore of() {
+        return new SimpleCompensationStore(
+                new ConcurrentHashMap<>()
+        );
     }
 
     @Override
-    public void add(KhTransaction compensationTransaction) {
-
+    public void add(KhTransaction compensation) {
+        compensations.putIfAbsent(compensation.getTransactionId(), compensation);
     }
 
     @Override
-    public void compensate() {
-
-    }
-
-    @Override
-    public void clear() {
-
+    public KhTransaction pop(TransactionId transactionId) {
+        return compensations.remove(transactionId);
     }
 }

@@ -1,8 +1,7 @@
 package keyhub.distributedtransactionkit.core.transaction.single;
 
 import keyhub.distributedtransactionkit.core.KhTransactionException;
-import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
-import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
+import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 
 import java.util.function.Supplier;
@@ -14,12 +13,12 @@ public class SimpleSingleTransaction<R extends KhTransaction.Result> extends Abs
     @Override
     public KhTransaction.Result resolve() throws KhTransactionException {
         try {
+            storeCompensation();
             var result = transactionProcess.get();
             storeOutbox();
             return result;
         } catch (Exception e) {
-            storeCompensation();
-            throw new KhTransactionException(e);
+            throw new KhTransactionException(transactionId, e);
         }
     }
 
@@ -28,8 +27,8 @@ public class SimpleSingleTransaction<R extends KhTransaction.Result> extends Abs
         this.transactionProcess = transactionProcess;
     }
 
-    public SimpleSingleTransaction(Supplier<R> transactionProcess, CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
-        super(compensatingTransactionStore, outboxTransactionStore);
+    public SimpleSingleTransaction(Supplier<R> transactionProcess, KhTransactionContext transactionContext) {
+        super(transactionContext);
         this.transactionProcess = transactionProcess;
     }
 
@@ -37,7 +36,7 @@ public class SimpleSingleTransaction<R extends KhTransaction.Result> extends Abs
         return new SimpleSingleTransaction<>(transactionProcess);
     }
 
-    public static <R extends KhTransaction.Result> SimpleSingleTransaction<R> of(Supplier<R> transactionProcess, CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
-        return new SimpleSingleTransaction<>(transactionProcess, compensatingTransactionStore, outboxTransactionStore);
+    public static <R extends KhTransaction.Result> SimpleSingleTransaction<R> of(Supplier<R> transactionProcess, KhTransactionContext transactionContext) {
+        return new SimpleSingleTransaction<>(transactionProcess, transactionContext);
     }
 }

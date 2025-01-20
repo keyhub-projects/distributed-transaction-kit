@@ -1,11 +1,8 @@
 package keyhub.distributedtransactionkit.core.transaction.remote;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import keyhub.distributedtransactionkit.core.KhTransactionException;
-import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
-import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
-import keyhub.distributedtransactionkit.core.RemoteTransactionException;
+import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,12 +24,12 @@ import java.util.stream.Collectors;
 public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
     private Request request;
 
-    SimpleRemoteTransaction(CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore, ObjectMapper objectMapper) {
-        super(compensatingTransactionStore, outboxTransactionStore, objectMapper);
+    SimpleRemoteTransaction(KhTransactionContext transactionContext, ObjectMapper objectMapper) {
+        super(transactionContext, objectMapper);
     }
 
-    SimpleRemoteTransaction(CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
-        super(compensatingTransactionStore, outboxTransactionStore);
+    SimpleRemoteTransaction(KhTransactionContext transactionContext) {
+        super(transactionContext);
     }
 
     SimpleRemoteTransaction() {
@@ -43,12 +40,12 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
         return new SimpleRemoteTransaction();
     }
 
-    public static SimpleRemoteTransaction of (CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
-        return new SimpleRemoteTransaction(compensatingTransactionStore, outboxTransactionStore);
+    public static SimpleRemoteTransaction of (KhTransactionContext transactionContext) {
+        return new SimpleRemoteTransaction(transactionContext);
     }
 
-    public static SimpleRemoteTransaction of(CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore, ObjectMapper objectMapper) {
-        return new SimpleRemoteTransaction(compensatingTransactionStore, outboxTransactionStore, objectMapper);
+    public static SimpleRemoteTransaction of(KhTransactionContext transactionContext, ObjectMapper objectMapper) {
+        return new SimpleRemoteTransaction(transactionContext, objectMapper);
     }
 
     @Builder @AllArgsConstructor @NoArgsConstructor @Getter
@@ -61,14 +58,15 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
     }
 
     public static class Result implements KhTransaction.Result {
-        SimpleRemoteTransaction distributedTransaction;
+        private final Object rawResult;
+        private final ObjectMapper objectMapper;
+        private Result(SimpleRemoteTransaction transaction) throws KhTransactionException {
+            this.rawResult = transaction.rawResult;
+            this.objectMapper = transaction.objectMapper;
 
-        private Result(SimpleRemoteTransaction distributedTransaction) throws KhTransactionException {
-            this.distributedTransaction = distributedTransaction;
-            if (distributedTransaction.exception != null) {
-                throw distributedTransaction.exception;
+            if (transaction.exception != null) {
+                throw new KhTransactionException(transaction.getTransactionId(), transaction.exception);
             }
-            this.distributedTransaction.storeOutbox();
         }
 
         private static Result from(SimpleRemoteTransaction distributedTransaction) throws KhTransactionException {
@@ -77,17 +75,17 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
 
         @Override
         public <R> R toData(Class<R> returnType) {
-            return distributedTransaction.objectMapper.convertValue(distributedTransaction.rawResult, returnType);
+            return objectMapper.convertValue(rawResult, returnType);
         }
 
         @Override
         public <R> List<R> toList(Class<R> returnType) {
-            if (distributedTransaction.rawResult instanceof List<?> tempList) {
+            if (rawResult instanceof List<?> tempList) {
                 return tempList.stream()
-                        .map(element -> distributedTransaction.objectMapper.convertValue(element, returnType))
+                        .map(element -> objectMapper.convertValue(element, returnType))
                         .toList();
             }
-            throw new ClassCastException(distributedTransaction.rawResult + " Cannot cast");
+            throw new ClassCastException(rawResult + " Cannot cast");
         }
     }
 
@@ -105,28 +103,29 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
     @Override
     public Result resolve() throws KhTransactionException {
         try{
+            storeCompensation();
             String targetUrl = generateParameterQuery(this.request);
             WebClient webClient = WebClient.create();
             var requestSpec = generateRequestSpec(webClient, this.request, targetUrl);
             ResponseSpec responseSpec = send(requestSpec);
             Mono<String> mono = responseSpec.bodyToMono(String.class);
             String jsonResponse = mono.block();
+            storeOutbox();
             this.rawResult = objectMapper.readValue(jsonResponse, Object.class);
         } catch (Throwable exception) {
-            storeCompensation();
-            this.exception = new RemoteTransactionException(exception);
+            this.exception = new KhTransactionException(transactionId, exception);
         }
         return Result.from(this);
     }
 
-    private ResponseSpec send(WebClient.RequestHeadersSpec<?> requestSpec) throws JsonProcessingException {
+    private ResponseSpec send(WebClient.RequestHeadersSpec<?> requestSpec) {
         return requestSpec
             .retrieve()
             .onStatus(
                 httpStatus -> httpStatus == HttpStatus.INTERNAL_SERVER_ERROR,
                 clientResponse -> clientResponse
                     .bodyToMono(String.class)
-                    .flatMap(responseBody -> Mono.error(new RemoteTransactionException()))
+                    .flatMap(responseBody -> Mono.error(new KhTransactionException(transactionId)))
             );
     }
 

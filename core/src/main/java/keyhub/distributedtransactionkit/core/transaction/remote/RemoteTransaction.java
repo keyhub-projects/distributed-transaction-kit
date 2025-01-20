@@ -1,6 +1,7 @@
 package keyhub.distributedtransactionkit.core.transaction.remote;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
 import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
 import keyhub.distributedtransactionkit.core.transaction.single.SingleTransaction;
@@ -14,12 +15,12 @@ public interface RemoteTransaction extends SingleTransaction {
         return new SimpleRemoteTransaction();
     }
 
-    static RemoteTransaction of(CompensationStore store, OutboxStore outboxStore){
-        return new SimpleRemoteTransaction(store, outboxStore);
+    static RemoteTransaction of(KhTransactionContext transactionContext){
+        return new SimpleRemoteTransaction(transactionContext);
     }
 
-    static RemoteTransaction of(CompensationStore store, OutboxStore outboxStore, ObjectMapper objectMapper){
-        return new SimpleRemoteTransaction(store, outboxStore, objectMapper);
+    static RemoteTransaction of(KhTransactionContext transactionContext, ObjectMapper objectMapper){
+        return new SimpleRemoteTransaction(transactionContext, objectMapper);
     }
 
     RemoteTransaction get(String url);

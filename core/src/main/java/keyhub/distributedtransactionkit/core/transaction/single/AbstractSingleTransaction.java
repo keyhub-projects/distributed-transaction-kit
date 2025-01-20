@@ -1,8 +1,7 @@
 package keyhub.distributedtransactionkit.core.transaction.single;
 
 import keyhub.distributedtransactionkit.core.KhTransactionException;
-import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
-import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
+import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.transaction.AbstractTransaction;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 
@@ -10,13 +9,13 @@ import java.util.function.Supplier;
 
 public abstract class AbstractSingleTransaction extends AbstractTransaction implements SingleTransaction {
 
-    protected KhTransaction compensationTransaction;
-    protected KhTransaction outboxTransaction;
+    protected KhTransaction compensation;
+    protected KhTransaction outbox;
     protected KhTransactionException exception;
     protected Object rawResult;
 
-    protected AbstractSingleTransaction(CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
-        super(compensatingTransactionStore, outboxTransactionStore);
+    protected AbstractSingleTransaction(KhTransactionContext transactionContext) {
+        super(transactionContext);
     }
 
     protected AbstractSingleTransaction() {
@@ -31,13 +30,8 @@ public abstract class AbstractSingleTransaction extends AbstractTransaction impl
 
     @Override
     public KhTransaction setCompensation(KhTransaction compensation) {
-        this.compensationTransaction = compensation;
+        this.compensation = compensation;
         return this;
-    }
-
-    @Override
-    protected void storeCompensation() {
-        this.outboxTransactionStore.add(this.outboxTransaction);
     }
 
     @Override
@@ -48,12 +42,17 @@ public abstract class AbstractSingleTransaction extends AbstractTransaction impl
 
     @Override
     public KhTransaction setOutbox(KhTransaction outbox) {
-        this.outboxTransaction = outbox;
+        this.outbox = outbox;
         return this;
     }
 
     @Override
+    protected void storeCompensation() {
+        this.transactionContext.storeCompensation(this.compensation);
+    }
+
+    @Override
     protected void storeOutbox() {
-        this.compensatingTransactionStore.add(this.compensationTransaction);
+        this.transactionContext.storeOutbox(this.outbox);
     }
 }

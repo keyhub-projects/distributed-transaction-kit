@@ -2,21 +2,21 @@ package keyhub.distributedtransactionkit.core;
 
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 
-public class KhTransactionException extends Exception {
+public class KhCompensationException extends Exception {
     TransactionId transactionId;
 
-    public KhTransactionException(TransactionId transactionId) {
+    public KhCompensationException(TransactionId transactionId) {
         this.transactionId = transactionId;
     }
-    public KhTransactionException(TransactionId transactionId, String message) {
+    public KhCompensationException(TransactionId transactionId, String message) {
         super(message);
         this.transactionId = transactionId;
     }
-    public KhTransactionException(TransactionId transactionId, String message, Throwable cause) {
+    public KhCompensationException(TransactionId transactionId, String message, Throwable cause) {
         super(message, cause);
         this.transactionId = transactionId;
     }
-    public KhTransactionException(TransactionId transactionId, Throwable cause) {
+    public KhCompensationException(TransactionId transactionId, Throwable cause) {
         super(cause);
         this.transactionId = transactionId;
     }

@@ -1,8 +1,7 @@
 package keyhub.distributedtransactionkit.core.transaction.remote;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
-import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
+import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.transaction.single.AbstractSingleTransaction;
 import org.springframework.http.HttpMethod;
 
@@ -11,13 +10,13 @@ import java.util.Map;
 public abstract class AbstractRemoteTransaction extends AbstractSingleTransaction implements RemoteTransaction {
     protected final ObjectMapper objectMapper;
 
-    protected AbstractRemoteTransaction(CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore, ObjectMapper objectMapper) {
-        super(compensatingTransactionStore, outboxTransactionStore);
+    protected AbstractRemoteTransaction(KhTransactionContext transactionContext, ObjectMapper objectMapper) {
+        super(transactionContext);
         this.objectMapper = objectMapper;
     }
 
-    protected AbstractRemoteTransaction(CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
-        super(compensatingTransactionStore, outboxTransactionStore);
+    protected AbstractRemoteTransaction(KhTransactionContext transactionContext) {
+        super(transactionContext);
         this.objectMapper = new ObjectMapper();
     }
 

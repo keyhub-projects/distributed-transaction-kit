@@ -1,9 +1,7 @@
 package keyhub.distributedtransactionkit.core.transaction.composite;
 
 import keyhub.distributedtransactionkit.core.KhTransactionException;
-import keyhub.distributedtransactionkit.core.RemoteTransactionException;
-import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
-import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
+import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.transaction.AbstractTransaction;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
@@ -14,23 +12,23 @@ import java.util.Map;
 public class SimpleCompositeTransaction extends AbstractTransaction implements CompositeTransaction {
 
     protected final Map<TransactionId, KhTransaction> transactionIdMap;
-    protected KhTransaction compensationTransaction;
-    protected KhTransaction outboxTransaction;
-    protected RemoteTransactionException exception;
+    protected KhTransaction compensation;
+    protected KhTransaction outbox;
+    protected KhTransactionException exception;
 
-    protected SimpleCompositeTransaction(CompensationStore compensatingTransactionStore, OutboxStore outboxTransactionStore) {
-        super(compensatingTransactionStore, outboxTransactionStore);
+    protected SimpleCompositeTransaction(KhTransactionContext transactionContext) {
+        super(transactionContext);
         this.transactionIdMap = new HashMap<>();
     }
 
     @Override
     protected void storeCompensation() {
-
+        //todo
     }
 
     @Override
     protected void storeOutbox() {
-
+        //todo
     }
 
     @Override
