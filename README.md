@@ -12,13 +12,47 @@ classDiagram
         Result resolve()
     }
     <<interface>> KhTransaction
-
-    class Result {
-        toData()
-        toList()
+    
+    class SingleTransaction {
     }
-    <<interface>> Result
-    KhTransaction <-- Result
+    <<interface>> SingleTransaction
+    KhTransaction <|-- SingleTransaction
+    
+    class RemoteTransaction {
+        get()
+        post()
+        put()
+        delete()
+        request()
+    }
+    <<interface>> RemoteTransaction
+    SingleTransaction <|-- RemoteTransaction
+
+    class CompositeTransaction {
+        add()
+    }
+    KhTransaction <|-- CompositeTransaction
+    <<interface>> CompositeTransaction
+
+    class SequencedTransaction {
+        add()
+    }
+    <<interface>> SequencedTransaction
+    CompositeTransaction <|-- SequencedTransaction
+```
+
+```mermaid
+---
+title: KhTransaction detail
+---
+classDiagram
+    class KhTransaction {
+        KhTransactionId getTransactionId()
+        setCompensation(KhTransaction compensation)
+        setOutbox(KhTransaction outbox)
+        Result resolve()
+    }
+    <<interface>> KhTransaction
     
     class AbstractTransaction {
         KhTransactionId transactionId
@@ -73,6 +107,7 @@ classDiagram
 
 
     class CompositeTransaction {
+        add()
     }
     KhTransaction <|-- CompositeTransaction
     <<interface>> CompositeTransaction
@@ -84,6 +119,7 @@ classDiagram
     AbstractTransaction <|-- SimpleCompositeTransaction
 
     class SequencedTransaction {
+        add()
     }
     <<interface>> SequencedTransaction
     CompositeTransaction <|-- SequencedTransaction
@@ -163,15 +199,5 @@ classDiagram
     class WriteAheadLogger {
     }
     <<interface>> WriteAheadLogger
-    
-    class SimpleWriteAheadLogger {
-    }
-    WriteAheadLogger <|.. SimpleWriteAheadLogger
     TransactionContextImplement *--> WriteAheadLogger
-    
-    class WriteAheadLogRepository {
-    }
-    <<interface>> WriteAheadLogRepository
-    SimpleWriteAheadLogger *--> WriteAheadLogRepository
-    
 ```
