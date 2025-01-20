@@ -108,7 +108,7 @@ flowchart
     handleByInterceptor(handle by transaction interceptor)
     wal(write ahead log)
     compensateByStore(compensate by store)
-    start --> transaction --> isInTransaction --> storeTransactionId --> exception --> handleByInterceptor --> wal --> compensateByStore
+    start --> transaction --> storeTransactionId --> exception --> handleByInterceptor --> wal --> compensateByStore
 ```
 
 ```mermaid
@@ -122,7 +122,7 @@ flowchart
     finishTransaction(transaction finished)
     handleByInterceptor(handle by transaction interceptor)
     invokeOutboxEventByStore(invoke outbox event by store)
-    start --> transaction --> isInTransaction --> storeTransactionId --> finishTransaction --> handleByInterceptor --> invokeOutboxEventByStore
+    start --> transaction --> storeTransactionId --> finishTransaction --> handleByInterceptor --> invokeOutboxEventByStore
 ```
 
 - Transaction에 의해 관리된다면, 인터셉터가 Transaction을 바라보도록 트랜잭션 범위를 확장한다.
