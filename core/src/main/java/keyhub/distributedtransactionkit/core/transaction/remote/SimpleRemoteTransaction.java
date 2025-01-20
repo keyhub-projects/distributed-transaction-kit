@@ -1,10 +1,9 @@
-package keyhub.distributedtransactionkit.core.transaction;
+package keyhub.distributedtransactionkit.core.transaction.remote;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import keyhub.distributedtransactionkit.core.compensation.CompensatingTransactionStore;
-import keyhub.distributedtransactionkit.core.RemoteTransactionException;
-import keyhub.distributedtransactionkit.core.lib.ApplicationContextProvider;
+import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
+import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
+import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,23 +21,31 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class SingleRemoteTransaction extends AbstractRemoteTransaction {
+public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
     private Request request;
-    private Object response;
-    private RemoteTransactionException exception;
-    private RemoteTransaction compensationTransaction;
 
-    SingleRemoteTransaction(CompensatingTransactionStore compensatingTransactionStore) {
-        super(compensatingTransactionStore, new ObjectMapper());
+    SimpleRemoteTransaction(KhTransactionContext transactionContext, ObjectMapper objectMapper) {
+        super(transactionContext, objectMapper);
     }
 
-    static SingleRemoteTransaction of() {
-        CompensatingTransactionStore store = ApplicationContextProvider.getApplicationContext().getBean(CompensatingTransactionStore.class);
-        return new SingleRemoteTransaction(store);
+    SimpleRemoteTransaction(KhTransactionContext transactionContext) {
+        super(transactionContext);
     }
 
-    static SingleRemoteTransaction of(CompensatingTransactionStore store) {
-        return new SingleRemoteTransaction(store);
+    SimpleRemoteTransaction() {
+        super();
+    }
+
+    public static SimpleRemoteTransaction of() {
+        return new SimpleRemoteTransaction();
+    }
+
+    public static SimpleRemoteTransaction of (KhTransactionContext transactionContext) {
+        return new SimpleRemoteTransaction(transactionContext);
+    }
+
+    public static SimpleRemoteTransaction of(KhTransactionContext transactionContext, ObjectMapper objectMapper) {
+        return new SimpleRemoteTransaction(transactionContext, objectMapper);
     }
 
     @Builder @AllArgsConstructor @NoArgsConstructor @Getter
@@ -50,37 +57,40 @@ public class SingleRemoteTransaction extends AbstractRemoteTransaction {
         Object body;
     }
 
-    public static class Result implements RemoteTransaction.Result {
-        SingleRemoteTransaction distributedTransaction;
+    public static class Result implements KhTransaction.Result {
+        private final Object rawResult;
+        private final ObjectMapper objectMapper;
+        private Result(SimpleRemoteTransaction transaction) throws KhTransactionException {
+            this.rawResult = transaction.rawResult;
+            this.objectMapper = transaction.objectMapper;
 
-        private Result(SingleRemoteTransaction distributedTransaction) throws RemoteTransactionException {
-            this.distributedTransaction = distributedTransaction;
-            if (distributedTransaction.exception != null) {
-                throw distributedTransaction.exception;
+            if (transaction.exception != null) {
+                throw new KhTransactionException(transaction.getTransactionId(), transaction.exception);
             }
         }
 
-        public static Result from(SingleRemoteTransaction distributedTransaction) throws RemoteTransactionException {
+        private static Result from(SimpleRemoteTransaction distributedTransaction) throws KhTransactionException {
             return new Result(distributedTransaction);
         }
 
         @Override
         public <R> R toData(Class<R> returnType) {
-            return distributedTransaction.objectMapper.convertValue(distributedTransaction.response, returnType);
+            return objectMapper.convertValue(rawResult, returnType);
         }
 
         @Override
         public <R> List<R> toList(Class<R> returnType) {
-            if (distributedTransaction.response instanceof List<?> tempList) {
+            if (rawResult instanceof List<?> tempList) {
                 return tempList.stream()
-                        .map(element -> distributedTransaction.objectMapper.convertValue(element, returnType))
+                        .map(element -> objectMapper.convertValue(element, returnType))
                         .toList();
             }
-            throw new ClassCastException(distributedTransaction.response + " Cannot cast");
+            throw new ClassCastException(rawResult + " Cannot cast");
         }
     }
 
-    public SingleRemoteTransaction request(HttpMethod method, String url, Map<String, Object> parameters, Object body) {
+    @Override
+    public SimpleRemoteTransaction request(HttpMethod method, String url, Map<String, Object> parameters, Object body) {
         this.request = Request.builder()
                 .method(method)
                 .url(url)
@@ -91,30 +101,31 @@ public class SingleRemoteTransaction extends AbstractRemoteTransaction {
     }
 
     @Override
-    public Result resolve() throws RemoteTransactionException {
+    public Result resolve() throws KhTransactionException {
         try{
+            storeCompensation();
             String targetUrl = generateParameterQuery(this.request);
             WebClient webClient = WebClient.create();
             var requestSpec = generateRequestSpec(webClient, this.request, targetUrl);
             ResponseSpec responseSpec = send(requestSpec);
             Mono<String> mono = responseSpec.bodyToMono(String.class);
             String jsonResponse = mono.block();
-            this.response = objectMapper.readValue(jsonResponse, Object.class);
+            storeOutbox();
+            this.rawResult = objectMapper.readValue(jsonResponse, Object.class);
         } catch (Throwable exception) {
-            this.compensatingTransactionStore.add(this.compensationTransaction);
-            this.exception = new RemoteTransactionException(exception);
+            this.exception = new KhTransactionException(transactionId, exception);
         }
         return Result.from(this);
     }
 
-    private ResponseSpec send(WebClient.RequestHeadersSpec<?> requestSpec) throws JsonProcessingException {
+    private ResponseSpec send(WebClient.RequestHeadersSpec<?> requestSpec) {
         return requestSpec
             .retrieve()
             .onStatus(
                 httpStatus -> httpStatus == HttpStatus.INTERNAL_SERVER_ERROR,
                 clientResponse -> clientResponse
                     .bodyToMono(String.class)
-                    .flatMap(responseBody -> Mono.error(new RemoteTransactionException()))
+                    .flatMap(responseBody -> Mono.error(new KhTransactionException(transactionId)))
             );
     }
 
@@ -165,11 +176,5 @@ public class SingleRemoteTransaction extends AbstractRemoteTransaction {
         WebClient.RequestBodyUriSpec casted = (WebClient.RequestBodyUriSpec) requestSpec;
         casted.bodyValue(body);
         return casted;
-    }
-
-    @Override
-    public SingleRemoteTransaction setCompensation(String url, HttpMethod httpMethod, Map<String, Object> parameters, Object body) {
-        this.compensationTransaction = RemoteTransaction.of().request(httpMethod, url, parameters, body);
-        return this;
     }
 }
