@@ -1,7 +1,7 @@
 package keyhub.distributedtransactionkit.core.context;
 
-import keyhub.distributedtransactionkit.core.KhCompensationException;
-import keyhub.distributedtransactionkit.core.KhOutboxException;
+import keyhub.distributedtransactionkit.core.exception.KhCompensationException;
+import keyhub.distributedtransactionkit.core.exception.KhOutboxException;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 

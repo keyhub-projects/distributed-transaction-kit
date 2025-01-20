@@ -2,8 +2,6 @@ package keyhub.distributedtransactionkit.core.transaction.remote;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
-import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
-import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
 import keyhub.distributedtransactionkit.core.transaction.single.SingleTransaction;
 import org.springframework.http.HttpMethod;
 

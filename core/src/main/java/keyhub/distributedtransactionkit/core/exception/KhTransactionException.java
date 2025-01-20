@@ -1,4 +1,4 @@
-package keyhub.distributedtransactionkit.core;
+package keyhub.distributedtransactionkit.core.exception;
 
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 

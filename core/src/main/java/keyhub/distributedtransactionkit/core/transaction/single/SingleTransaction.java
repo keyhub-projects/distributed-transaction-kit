@@ -14,10 +14,4 @@ public interface SingleTransaction extends KhTransaction {
     static <R extends KhTransaction.Result> SimpleSingleTransaction<R> of(Supplier<R> transactionProcess, KhTransactionContext transactionContext) {
         return SimpleSingleTransaction.of(transactionProcess, transactionContext);
     }
-
-    KhTransaction setCompensation(Supplier<KhTransaction> compensationSupplier);
-    KhTransaction setCompensation(KhTransaction compensation);
-
-    KhTransaction setOutbox(Supplier<KhTransaction> outboxSupplier);
-    KhTransaction setOutbox(KhTransaction outbox);
 }

@@ -1,6 +1,6 @@
 package keyhub.distributedtransactionkit.core.transaction.single;
 
-import keyhub.distributedtransactionkit.core.KhTransactionException;
+import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 

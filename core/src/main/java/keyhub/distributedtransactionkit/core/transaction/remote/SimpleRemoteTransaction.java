@@ -1,7 +1,7 @@
 package keyhub.distributedtransactionkit.core.transaction.remote;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import keyhub.distributedtransactionkit.core.KhTransactionException;
+import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import lombok.AllArgsConstructor;
