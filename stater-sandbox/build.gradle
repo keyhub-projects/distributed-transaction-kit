@@ -22,10 +22,13 @@ repositories {
 }
 
 dependencies {
-    api 'org.springframework.boot:spring-boot-starter-webflux:3.4.0'
-    api 'org.springframework.boot:spring-boot-starter-test'
-    api 'io.projectreactor:reactor-test'
-    api 'org.junit.platform:junit-platform-launcher'
+    implementation project(":core")
+    testImplementation project(":core")
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    implementation 'p6spy:p6spy:3.9.1'
+    runtimeOnly 'com.h2database:h2'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {

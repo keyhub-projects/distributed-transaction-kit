@@ -9,10 +9,6 @@ import java.util.Map;
 
 public interface RemoteTransaction extends SingleTransaction {
 
-    static RemoteTransaction of(){
-        return new SimpleRemoteTransaction();
-    }
-
     static RemoteTransaction of(KhTransactionContext transactionContext){
         return new SimpleRemoteTransaction(transactionContext);
     }

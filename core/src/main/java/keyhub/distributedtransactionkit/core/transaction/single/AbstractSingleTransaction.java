@@ -11,18 +11,4 @@ public abstract class AbstractSingleTransaction extends AbstractTransaction impl
     protected AbstractSingleTransaction(KhTransactionContext transactionContext) {
         super(transactionContext);
     }
-
-    protected AbstractSingleTransaction() {
-        super();
-    }
-
-    @Override
-    protected void storeCompensation() {
-        this.transactionContext.storeCompensation(this.compensation);
-    }
-
-    @Override
-    protected void storeOutbox() {
-        this.transactionContext.storeOutbox(this.outbox);
-    }
 }

@@ -1,1 +1,8 @@
-spring.application.name=core
+spring:
+  application:
+    name: core
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    url: jdbc:p6spy:h2:mem:test
+    username: su
+    password:

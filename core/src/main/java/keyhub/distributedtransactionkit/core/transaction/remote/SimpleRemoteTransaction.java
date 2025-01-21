@@ -32,14 +32,6 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
         super(transactionContext);
     }
 
-    SimpleRemoteTransaction() {
-        super();
-    }
-
-    public static SimpleRemoteTransaction of() {
-        return new SimpleRemoteTransaction();
-    }
-
     public static SimpleRemoteTransaction of (KhTransactionContext transactionContext) {
         return new SimpleRemoteTransaction(transactionContext);
     }
@@ -103,15 +95,15 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
     @Override
     public Result resolve() throws KhTransactionException {
         try{
-            storeCompensation();
             String targetUrl = generateParameterQuery(this.request);
             WebClient webClient = WebClient.create();
             var requestSpec = generateRequestSpec(webClient, this.request, targetUrl);
             ResponseSpec responseSpec = send(requestSpec);
             Mono<String> mono = responseSpec.bodyToMono(String.class);
             String jsonResponse = mono.block();
-            storeOutbox();
             this.rawResult = objectMapper.readValue(jsonResponse, Object.class);
+            storeCompensation();
+            storeOutbox();
         } catch (Throwable exception) {
             this.exception = new KhTransactionException(transactionId, exception);
         }

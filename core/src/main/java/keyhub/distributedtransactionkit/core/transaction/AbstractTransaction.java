@@ -2,7 +2,6 @@ package keyhub.distributedtransactionkit.core.transaction;
 
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 
-import keyhub.distributedtransactionkit.core.lib.ApplicationContextProvider;
 import lombok.Getter;
 
 import java.util.function.Supplier;
@@ -10,18 +9,14 @@ import java.util.function.Supplier;
 public abstract class AbstractTransaction implements KhTransaction {
     @Getter
     protected final TransactionId transactionId;
-    protected final KhTransactionContext transactionContext;
+    @Getter
+    protected final KhTransactionContext context;
     protected KhTransaction compensation;
     protected KhTransaction outbox;
 
     protected AbstractTransaction(KhTransactionContext transactionContext) {
         this.transactionId = TransactionId.ofUuid();
-        this.transactionContext = transactionContext;
-    }
-
-    protected AbstractTransaction(){
-        this.transactionId = TransactionId.ofUuid();
-        this.transactionContext = ApplicationContextProvider.getApplicationContext().getBean(KhTransactionContext.class);
+        this.context = transactionContext;
     }
 
     @Override
@@ -48,6 +43,15 @@ public abstract class AbstractTransaction implements KhTransaction {
         return this;
     }
 
-    protected abstract void storeCompensation();
-    protected abstract void storeOutbox();
+    protected void storeCompensation() {
+        if(compensation !=null) {
+            this.context.storeCompensation(this.transactionId, this.compensation);
+        }
+    }
+
+    protected void storeOutbox() {
+        if(outbox !=null) {
+            this.context.storeOutbox(this.transactionId, this.outbox);
+        }
+    }
 }

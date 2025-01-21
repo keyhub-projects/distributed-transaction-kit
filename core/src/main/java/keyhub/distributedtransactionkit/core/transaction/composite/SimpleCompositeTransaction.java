@@ -26,16 +26,6 @@ public class SimpleCompositeTransaction extends AbstractTransaction implements C
     }
 
     @Override
-    protected void storeCompensation() {
-        //todo
-    }
-
-    @Override
-    protected void storeOutbox() {
-        //todo
-    }
-
-    @Override
     public Result resolve() throws KhTransactionException {
         // todo
         return null;

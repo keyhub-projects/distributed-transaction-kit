@@ -1,4 +1,4 @@
-package keyhub.distributedtransactionkit.core.lib;
+package keyhub.distributedtransactionkit.starter.adptor;
 
 
 import lombok.Getter;

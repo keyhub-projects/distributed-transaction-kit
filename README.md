@@ -2,6 +2,21 @@
 
 ```mermaid
 ---
+title: core
+---
+classDiagram
+    class KhTransaction
+    
+    class KhTransactionContext
+    
+    class KhTransactionResolver
+    
+    KhTransaction *--> KhTransactionContext
+    KhTransactionResolver *--> KhTransactionContext
+```
+
+```mermaid
+---
 title: KhTransaction
 ---
 classDiagram
@@ -171,12 +186,17 @@ classDiagram
     class KhTransactionContext {
     }
     <<interface>> KhTransactionContext
-    KhTransactionContext <--* AbstractTransaction
+     AbstractTransaction *-- KhTransactionContext
     <<abstract>> AbstractTransaction
     
-    class TransactionContextImplement {
+    class AbstractTransactionContext {
     }
-    KhTransactionContext <|.. TransactionContextImplement
+    KhTransactionContext <|.. AbstractTransactionContext
+    
+    class SpringTransactionContext {
+    }
+    AbstractTransactionContext <|-- SpringTransactionContext
+    TransactionSynchronization <|.. SpringTransactionContext
     
     class CompensationStore {
     }
@@ -185,7 +205,7 @@ classDiagram
     class SimpleCompensationStore {
     }
     CompensationStore <|.. SimpleCompensationStore
-    TransactionContextImplement *--> CompensationStore
+    SpringTransactionContext *-- CompensationStore
     
     class OutboxStore {
     }
@@ -194,10 +214,10 @@ classDiagram
     class SimpleOutboxStore {
     }
     OutboxStore <|.. SimpleOutboxStore
-    TransactionContextImplement *--> OutboxStore
+    SpringTransactionContext *-- OutboxStore
     
     class WriteAheadLogger {
     }
     <<interface>> WriteAheadLogger
-    TransactionContextImplement *--> WriteAheadLogger
+    SpringTransactionContext *-- WriteAheadLogger
 ```

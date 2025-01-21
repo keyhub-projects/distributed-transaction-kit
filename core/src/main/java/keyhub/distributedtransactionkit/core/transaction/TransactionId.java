@@ -1,6 +1,6 @@
 package keyhub.distributedtransactionkit.core.transaction;
 
-import keyhub.distributedtransactionkit.core.lib.UuidV7Generator;
+import keyhub.distributedtransactionkit.core.etc.UuidV7Generator;
 
 public record TransactionId(
         String transactionId

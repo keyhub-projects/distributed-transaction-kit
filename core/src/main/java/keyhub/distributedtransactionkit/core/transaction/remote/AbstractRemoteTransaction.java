@@ -20,11 +20,6 @@ public abstract class AbstractRemoteTransaction extends AbstractSingleTransactio
         this.objectMapper = new ObjectMapper();
     }
 
-    protected AbstractRemoteTransaction() {
-        super();
-        this.objectMapper = new ObjectMapper();
-    }
-
     @Override
     public RemoteTransaction get(String url) {
         return request(HttpMethod.GET, url);
