@@ -2,42 +2,55 @@ package keyhub.distributedtransactionkit.core.transaction.composite;
 
 import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
-import keyhub.distributedtransactionkit.core.transaction.AbstractTransaction;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class SimpleCompositeTransaction extends AbstractTransaction implements CompositeTransaction {
-
-    protected final Map<TransactionId, KhTransaction> transactionIdMap;
-    protected final Map<TransactionId, KhTransactionException> exceptions;
-    protected final Map<TransactionId, Object> rawResults;
-    protected KhTransaction compensation;
-    protected KhTransaction outbox;
+public class SimpleCompositeTransaction extends AbstractCompositeTransaction implements CompositeTransaction {
 
     protected SimpleCompositeTransaction(KhTransactionContext transactionContext) {
         super(transactionContext);
-        this.transactionIdMap = new ConcurrentHashMap<>();
-        this.exceptions = new HashMap<>();
-        this.rawResults = new HashMap<>();
     }
 
     @Override
-    protected void storeCompensation() {
-        //todo
+    public SimpleCompositeTransaction.Result resolve() throws KhTransactionException {
+        for(TransactionId transactionId : subTransactionMap.keySet()) {
+            KhTransaction transaction = subTransactionMap.get(transactionId);
+            var result = transaction.resolve();
+            subTransactionResultMap.put(transactionId, result);
+        }
+        subTransactionResultMap.clear();
+        return new SimpleCompositeTransaction.Result(this);
     }
 
     @Override
-    protected void storeOutbox() {
-        //todo
+    public SimpleCompositeTransaction add(KhTransaction transaction) {
+        subTransactionMap.put(transaction.getTransactionId(), transaction);
+        return this;
     }
 
-    @Override
-    public Result resolve() throws KhTransactionException {
-        // todo
-        return null;
+    public static class Result implements CompositeTransaction.Result {
+        Map<TransactionId, KhTransaction.Result<?>> results;
+
+        protected Result(SimpleCompositeTransaction transaction) {
+            this.results = transaction.subTransactionResultMap;
+            transaction.subTransactionResultMap.clear();
+        }
+
+        @Override
+        public KhTransaction.Result<?> get(TransactionId transactionId) {
+            return results.get(transactionId);
+        }
+
+        @Override
+        public Map<TransactionId, KhTransaction.Result<?>> get() {
+            return results;
+        }
+
+        @Override
+        public <R> R get(Class<R> returnType) {
+            return returnType.cast(results);
+        }
     }
 }

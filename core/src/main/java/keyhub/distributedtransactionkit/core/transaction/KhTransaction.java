@@ -1,9 +1,8 @@
 package keyhub.distributedtransactionkit.core.transaction;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 
-import java.util.List;
 import java.util.function.Supplier;
 
 public interface KhTransaction {
@@ -17,10 +16,12 @@ public interface KhTransaction {
 
     KhTransaction setOutbox(KhTransaction outbox);
 
-    interface Result {
-        <R> R toData(Class<R> returnType) throws JsonProcessingException;
-        <R> List<R> toList(Class<R> returnType);
+    KhTransactionContext getContext();
+
+    interface Result<T> {
+        T get();
+        <R> R get(Class<R> returnType);
     }
 
-    Result resolve() throws KhTransactionException;
+    Result<?> resolve() throws KhTransactionException;
 }

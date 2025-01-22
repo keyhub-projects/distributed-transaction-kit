@@ -2,6 +2,21 @@
 
 ```mermaid
 ---
+title: core
+---
+classDiagram
+    class KhTransaction
+    
+    class KhTransactionContext
+    
+    class KhTransactionResolver
+    
+    KhTransaction *--> KhTransactionContext
+    KhTransactionResolver *--> KhTransactionContext
+```
+
+```mermaid
+---
 title: KhTransaction
 ---
 classDiagram
@@ -112,11 +127,18 @@ classDiagram
     KhTransaction <|-- CompositeTransaction
     <<interface>> CompositeTransaction
 
+    class AbstractCompositeTransaction {
+        
+    }
+    <<abstract>> AbstractCompositeTransaction
+    CompositeTransaction <|.. AbstractCompositeTransaction
+    AbstractTransaction <|-- AbstractCompositeTransaction
+
     class SimpleCompositeTransaction {
         Map<KhTransactionId, KhTransaction> transactionMap
     }
     CompositeTransaction <|.. SimpleCompositeTransaction
-    AbstractTransaction <|-- SimpleCompositeTransaction
+    AbstractCompositeTransaction <|-- SimpleCompositeTransaction
 
     class SequencedTransaction {
         add()
@@ -128,7 +150,7 @@ classDiagram
         List<KhTransactionId> transactionSequence
     }
     SequencedTransaction <|.. SimpleSequencedTransaction
-    SimpleCompositeTransaction <|-- SimpleSequencedTransaction
+    AbstractCompositeTransaction <|-- SimpleSequencedTransaction
 ```
 
 ```mermaid
@@ -171,12 +193,17 @@ classDiagram
     class KhTransactionContext {
     }
     <<interface>> KhTransactionContext
-    KhTransactionContext <--* AbstractTransaction
+     AbstractTransaction *-- KhTransactionContext
     <<abstract>> AbstractTransaction
     
-    class TransactionContextImplement {
+    class AbstractTransactionContext {
     }
-    KhTransactionContext <|.. TransactionContextImplement
+    KhTransactionContext <|.. AbstractTransactionContext
+    
+    class SpringTransactionContext {
+    }
+    AbstractTransactionContext <|-- SpringTransactionContext
+    TransactionSynchronization <|.. SpringTransactionContext
     
     class CompensationStore {
     }
@@ -185,7 +212,7 @@ classDiagram
     class SimpleCompensationStore {
     }
     CompensationStore <|.. SimpleCompensationStore
-    TransactionContextImplement *--> CompensationStore
+    SpringTransactionContext *-- CompensationStore
     
     class OutboxStore {
     }
@@ -194,10 +221,10 @@ classDiagram
     class SimpleOutboxStore {
     }
     OutboxStore <|.. SimpleOutboxStore
-    TransactionContextImplement *--> OutboxStore
+    SpringTransactionContext *-- OutboxStore
     
     class WriteAheadLogger {
     }
     <<interface>> WriteAheadLogger
-    TransactionContextImplement *--> WriteAheadLogger
+    SpringTransactionContext *-- WriteAheadLogger
 ```

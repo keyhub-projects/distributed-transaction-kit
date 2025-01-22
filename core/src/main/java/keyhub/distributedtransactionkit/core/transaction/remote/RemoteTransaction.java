@@ -2,16 +2,14 @@ package keyhub.distributedtransactionkit.core.transaction.remote;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
+import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.single.SingleTransaction;
 import org.springframework.http.HttpMethod;
 
+import java.util.List;
 import java.util.Map;
 
-public interface RemoteTransaction extends SingleTransaction {
-
-    static RemoteTransaction of(){
-        return new SimpleRemoteTransaction();
-    }
+public interface RemoteTransaction extends SingleTransaction<Object> {
 
     static RemoteTransaction of(KhTransactionContext transactionContext){
         return new SimpleRemoteTransaction(transactionContext);
@@ -20,6 +18,14 @@ public interface RemoteTransaction extends SingleTransaction {
     static RemoteTransaction of(KhTransactionContext transactionContext, ObjectMapper objectMapper){
         return new SimpleRemoteTransaction(transactionContext, objectMapper);
     }
+
+    interface Result extends KhTransaction.Result<Object> {
+        Object get();
+        <T> T get(Class<T> returnType);
+        <T> List<T> list(Class<T> returnType);
+    }
+
+    RemoteTransaction header(String key, String value);
 
     RemoteTransaction get(String url);
 

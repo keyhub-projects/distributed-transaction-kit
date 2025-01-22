@@ -9,9 +9,13 @@ public interface KhTransactionContext {
 
     void compensate(TransactionId transactionId) throws KhCompensationException;
 
+    void compensate() throws KhCompensationException;
+
     void invokeEvent(TransactionId transactionId) throws KhOutboxException;
 
-    void storeCompensation(KhTransaction compensation);
+    void invokeEvent() throws KhOutboxException;
 
-    void storeOutbox(KhTransaction outbox);
+    void storeCompensation(TransactionId transactionId, KhTransaction compensation);
+
+    void storeOutbox(TransactionId transactionId, KhTransaction outbox);
 }

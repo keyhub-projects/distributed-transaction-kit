@@ -7,7 +7,7 @@ import org.springframework.http.HttpMethod;
 
 import java.util.Map;
 
-public abstract class AbstractRemoteTransaction extends AbstractSingleTransaction implements RemoteTransaction {
+public abstract class AbstractRemoteTransaction extends AbstractSingleTransaction<Object> implements RemoteTransaction {
     protected final ObjectMapper objectMapper;
 
     protected AbstractRemoteTransaction(KhTransactionContext transactionContext, ObjectMapper objectMapper) {
@@ -20,65 +20,60 @@ public abstract class AbstractRemoteTransaction extends AbstractSingleTransactio
         this.objectMapper = new ObjectMapper();
     }
 
-    protected AbstractRemoteTransaction() {
-        super();
-        this.objectMapper = new ObjectMapper();
-    }
-
     @Override
-    public RemoteTransaction get(String url) {
+    public AbstractRemoteTransaction get(String url) {
         return request(HttpMethod.GET, url);
     }
 
     @Override
-    public RemoteTransaction get(String url, Map<String, Object> params) {
+    public AbstractRemoteTransaction get(String url, Map<String, Object> params) {
         return request(HttpMethod.GET, url, params);
     }
 
     @Override
-    public RemoteTransaction post(String url) {
+    public AbstractRemoteTransaction post(String url) {
         return request(HttpMethod.POST, url);
     }
 
     @Override
-    public RemoteTransaction post(String url, Object param) {
+    public AbstractRemoteTransaction post(String url, Object param) {
         return request(HttpMethod.POST, url, param);
     }
 
     @Override
-    public RemoteTransaction put(String url) {
+    public AbstractRemoteTransaction put(String url) {
         return request(HttpMethod.PUT, url);
     }
 
     @Override
-    public RemoteTransaction put(String url, Object param) {
+    public AbstractRemoteTransaction put(String url, Object param) {
         return request(HttpMethod.PUT, url, param);
     }
 
     @Override
-    public RemoteTransaction delete(String url) {
+    public AbstractRemoteTransaction delete(String url) {
         return request(HttpMethod.DELETE, url);
     }
 
     @Override
-    public RemoteTransaction delete(String url, Map<String, Object> params) {
+    public AbstractRemoteTransaction delete(String url, Map<String, Object> params) {
         return request(HttpMethod.DELETE, url, params);
     }
 
     @Override
-    public RemoteTransaction request(HttpMethod method, String url) {
+    public AbstractRemoteTransaction request(HttpMethod method, String url) {
         request(method, url, null, null);
         return this;
     }
 
     @Override
-    public RemoteTransaction request(HttpMethod method, String url, Map<String, Object> parameters) {
+    public AbstractRemoteTransaction request(HttpMethod method, String url, Map<String, Object> parameters) {
         request(method, url, parameters, null);
         return this;
     }
 
     @Override
-    public RemoteTransaction request(HttpMethod method, String url, Object body) {
+    public AbstractRemoteTransaction request(HttpMethod method, String url, Object body) {
         request(method, url, null, body);
         return this;
     }

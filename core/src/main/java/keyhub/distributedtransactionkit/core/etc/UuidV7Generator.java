@@ -1,4 +1,4 @@
-package keyhub.distributedtransactionkit.core.lib;
+package keyhub.distributedtransactionkit.core.etc;
 
 import java.time.Instant;
 import java.util.UUID;
