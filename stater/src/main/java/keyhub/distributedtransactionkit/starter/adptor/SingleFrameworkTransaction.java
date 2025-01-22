@@ -1,6 +1,5 @@
 package keyhub.distributedtransactionkit.starter.adptor;
 
-import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.single.SingleTransaction;
 import keyhub.distributedtransactionkit.starter.component.FrameworkTransactionContext;
 

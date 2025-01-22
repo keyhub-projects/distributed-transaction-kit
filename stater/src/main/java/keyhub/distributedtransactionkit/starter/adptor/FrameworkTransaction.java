@@ -5,9 +5,7 @@ import keyhub.distributedtransactionkit.core.exception.KhTransactionRuntimeExcep
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 import keyhub.distributedtransactionkit.starter.component.FrameworkTransactionContext;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
