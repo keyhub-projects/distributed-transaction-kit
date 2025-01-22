@@ -9,8 +9,8 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/core" />
-            <option value="$PROJECT_DIR$/stater" />
-            <option value="$PROJECT_DIR$/stater-sandbox" />
+            <option value="$PROJECT_DIR$/starter" />
+            <option value="$PROJECT_DIR$/starter-sandbox" />
           </set>
         </option>
       </GradleProjectSettings>
