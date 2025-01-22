@@ -84,8 +84,8 @@ public class TransactionService {
 ## Transaction Context
 
 - KhTransaction은 기존 Spring Transaction에 동기화됩니다.
-- Transaction에 의해 관리된다면, 인터셉터가 Transaction을 바라보도록 트랜잭션 범위를 확장
-- 없다면, 단일 트랜잭션으로 처리
+  - Transaction에 의해 관리된다면, 인터셉터가 Transaction을 바라보도록 트랜잭션 범위를 확장
+  - 없다면, 단일 트랜잭션으로 처리
 
 ```mermaid
 ---
@@ -142,6 +142,33 @@ classDiagram
     <<interface>> SequencedTransaction
     CompositeTransaction <|-- SequencedTransaction
 ```
+
+### 1. KhTransaction
+
+- 모든 트랜잭션의 부모 인터페이스입니다.
+- `FrameworkTransaction` 구현체를 통해 스프링 트랜잭션과 통합됩니다.
+
+### 2. SingleTransaction
+
+- 단일 트랜잭션 인터페이스입니다.
+- `SingleFrameworkTransaction` 구현체를 통해 스프링 트랜잭션과 통합됩니다.
+
+### 3. RemoteTransaction
+
+- 원격 REST API 요청 기능을 지원하는 단일 트랜잭션 인터페이스입니다.
+- `RemoteFrameworkTransaction` 구현체를 통해 스프링 트랜잭션과 통합됩니다.
+
+### 4. CompositeTransaction
+
+- 복합 트랜잭션 인터페이스입니다.
+- KhTransaction을 묶을 수 있습니다.
+- 실행 순서를 보장하지 않습니다.
+
+### 5. SequencedTransaction
+
+- 순서 보장 복합 트랜잭션 인터페이스입니다.
+- KhTransaction을 순서대로 묶을 수 있습니다.
+- 실행 순서를 보장합니다.
 
 ```mermaid
 ---
