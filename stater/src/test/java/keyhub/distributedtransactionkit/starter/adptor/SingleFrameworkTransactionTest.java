@@ -241,7 +241,7 @@ class SingleFrameworkTransactionTest {
 
 
     @Nested
-    class 종합_작성 {
+    class 종합_작성_통과사례 {
         @Autowired
         private AfterTransactionEventHandler afterTransactionEventHandler;
         @Autowired
@@ -270,7 +270,7 @@ class SingleFrameworkTransactionTest {
 
         public static class TransactionTestService {
             @Transactional
-            public KhTransaction.Result<?> invokeOutboxSample() {
+            public String invokeOutboxSample() {
                 FrameworkTransaction utd = SingleFrameworkTransaction.of(()->{
                             String sample = "Hello World!";
                             log.info(sample);
@@ -286,7 +286,8 @@ class SingleFrameworkTransactionTest {
                             log.info(outboxMessage);
                             return outboxMessage;
                         }));
-                return utd.resolve();
+                return utd.resolve()
+                        .get(String.class);
             }
         }
 
@@ -294,13 +295,78 @@ class SingleFrameworkTransactionTest {
         void 종합Transaction_동작() {
             var result = transactionTestService.invokeOutboxSample();
             assertNotNull(result);
-            var result2 = result.get();
-            assertNotNull(result2);
-            assertEquals("Hello World!", result2);
+            assertEquals("Hello World!", result);
 
+            verify(afterTransactionEventHandler, times(1)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
             verify(frameworkTransactionContext, times(0)).compensate();
             verify(frameworkTransactionContext, times(1)).invokeEvent();
+        }
+    }
+
+    @Nested
+    class 종합_작성_보상사례 {
+        @Autowired
+        private AfterTransactionEventHandler afterTransactionEventHandler;
+        @Autowired
+        private FrameworkTransactionContext frameworkTransactionContext;
+        @Autowired
+        private TransactionTestService transactionTestService;
+
+        @TestConfiguration
+        static class TestConfig {
+            @Bean
+            @Primary // 기존 빈 대신 사용
+            public AfterTransactionEventHandler afterTransactionEventHandler() {
+                return spy(new AfterTransactionEventHandler());
+            }
+            @Bean
+            @Primary // 기존 빈 대신 사용
+            public FrameworkTransactionContext frameworkTransactionContext(ApplicationEventPublisher applicationEventPublisher) {
+                return spy(new FrameworkTransactionContext(applicationEventPublisher));
+            }
+
+            @Bean
+            public TransactionTestService transactionTestService() {
+                return new TransactionTestService();
+            }
+        }
+
+        public static class TransactionTestService {
+            @Transactional
+            public String invokeOutboxSample() {
+                FrameworkTransaction utd = SingleFrameworkTransaction.of(()->{
+                            String sample = "Hello World!";
+                            log.info(sample);
+                            return sample;
+                        })
+                        .setCompensation(SingleFrameworkTransaction.of(()->{
+                            String compensationMessage = "It's compensation!";
+                            log.info(compensationMessage);
+                            return compensationMessage;
+                        }))
+                        .setOutbox(SingleFrameworkTransaction.of(() -> {
+                            String outboxMessage = "It's outbox!";
+                            log.info(outboxMessage);
+                            return outboxMessage;
+                        }));
+                var result = utd.resolve()
+                        .get(String.class);
+                invokeException();
+                return result;
+            }
+
+            private void invokeException(){
+                throw new RuntimeException("I need Exception!");
+            }
+        }
+
+        @Test
+        void 종합Transaction_동작() {
+            assertThrows(RuntimeException.class, ()->transactionTestService.invokeOutboxSample());
+
             verify(afterTransactionEventHandler, times(1)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+            verify(frameworkTransactionContext, times(1)).compensate();
+            verify(frameworkTransactionContext, times(0)).invokeEvent();
         }
     }
 }
