@@ -10,6 +10,11 @@
 
 ## 기능
 
+- KhTransaction은 레이지한 동작을 합니다.
+- resolve 시점에 실제 동작이 이뤄지며, 
+- resolve 완료시, 보상 트랜잭션과 outbox 트랜잭션의 실행을 트랜잭션 컨텍스트에 저장합니다.
+- resolve에 실패하면, 보상 트랜잭션과 outbox 트랜잭션을 실행하지 않습니다.
+
 ### 1. 보상 트랜잭션
 
 - 하나의 작업과 
@@ -22,13 +27,13 @@ title: compensation flow
 ---
 flowchart
     start([start transaction])
-    transaction(transact KhTransaction)
+    khTransaction(transact KhTransaction)
+    khTransactionSuccess(success KhTransaction)
     storeTransactionId(store TransactionId, compensating transaction pair in stack)
     exception(exception invoked)
     handleByInterceptor(handle by transaction interceptor)
-    wal(write ahead log)
-    compensateByStore(compensate by store)
-    start --> transaction --> storeTransactionId --> exception --> handleByInterceptor --> wal --> compensateByStore
+    compensate(compensate)
+    start --> khTransaction --> khTransactionSuccess --> storeTransactionId --> exception --> handleByInterceptor --> compensate
 ```
 
 ### 2. Outbox 트랜잭션
@@ -43,22 +48,23 @@ title: transaction outbox flow
 ---
 flowchart
     start([start transaction])
-    transaction(transact KhTransaction)
+    khTransaction(transact KhTransaction)
+    khTransactionSuccess(success KhTransaction)
     storeTransactionId(store TransactionId, outbox transaction pair in stack)
     finishTransaction(transaction finished)
     handleByInterceptor(handle by transaction interceptor)
-    invokeOutboxEventByStore(invoke outbox event by store)
-    start --> transaction --> storeTransactionId --> finishTransaction --> handleByInterceptor --> invokeOutboxEventByStore
+    invokeOutboxEventByStore(invoke outbox event)
+    start --> khTransaction --> khTransactionSuccess --> storeTransactionId --> finishTransaction --> handleByInterceptor --> invokeOutboxEventByStore
 ```
 
-- example
+- 정상 동작 사례 (outbox 동작)
 
 ```java
 @Service
 public class TransactionService {
     
     @Transactional
-    public KhTransaction.Result<?> transactSample() {
+    public String transactSample() {
         FrameworkTransaction utd = SingleFrameworkTransaction.of(()->{
                     String sample = "Hello World!";
                     log.info(sample);
@@ -74,7 +80,42 @@ public class TransactionService {
                     log.info(outboxMessage);
                     return outboxMessage;
                 }));
-        return utd.resolve();
+        return utd.resolve()
+                .get(String.class);
+    }
+}
+```
+
+- 보상 사례
+
+```java
+@Service
+public class TransactionTestService {
+    @Transactional
+    public String invokeOutboxSample() {
+        FrameworkTransaction utd = SingleFrameworkTransaction.of(()->{
+                    String sample = "Hello World!";
+                    log.info(sample);
+                    return sample;
+                })
+                .setCompensation(SingleFrameworkTransaction.of(()->{
+                    String compensationMessage = "It's compensation!";
+                    log.info(compensationMessage);
+                    return compensationMessage;
+                }))
+                .setOutbox(SingleFrameworkTransaction.of(() -> {
+                    String outboxMessage = "It's outbox!";
+                    log.info(outboxMessage);
+                    return outboxMessage;
+                }));
+        var result = utd.resolve()
+                .get(String.class);
+        invokeException();
+        return result;
+    }
+
+    private void invokeException(){
+        throw new RuntimeException("I need Exception!");
     }
 }
 ```
