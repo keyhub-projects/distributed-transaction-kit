@@ -8,8 +8,8 @@ classDiagram
     class KhTransaction
     
     class KhTransactionContext
-    
     KhTransaction *--> KhTransactionContext
+
 ```
 
 ```mermaid
