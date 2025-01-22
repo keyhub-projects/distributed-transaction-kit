@@ -6,14 +6,14 @@ import keyhub.distributedtransactionkit.starter.component.FrameworkTransactionCo
 
 import java.util.function.Supplier;
 
-public class SingleFrameworkTransaction extends FrameworkTransaction implements SingleTransaction {
-    protected SingleFrameworkTransaction(KhTransaction khTransaction) {
-        super(khTransaction);
+public class SingleFrameworkTransaction<T> extends FrameworkTransaction implements SingleTransaction<T> {
+    protected SingleFrameworkTransaction(SingleTransaction<T> innerTransaction) {
+        super(innerTransaction);
     }
 
-    public static <R extends Result> SingleFrameworkTransaction of(Supplier<R> transactionProcess) {
+    public static <T> SingleFrameworkTransaction<T> of(Supplier<T> transactionProcess) {
         FrameworkTransactionContext context = FrameworkTransaction.getTransactionContext();
-        SingleTransaction transaction = SingleTransaction.of(transactionProcess, context);
-        return new SingleFrameworkTransaction(transaction);
+        SingleTransaction<T> transaction = SingleTransaction.of(transactionProcess, context);
+        return new SingleFrameworkTransaction<>(transaction);
     }
 }

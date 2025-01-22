@@ -127,11 +127,18 @@ classDiagram
     KhTransaction <|-- CompositeTransaction
     <<interface>> CompositeTransaction
 
+    class AbstractCompositeTransaction {
+        
+    }
+    <<abstract>> AbstractCompositeTransaction
+    CompositeTransaction <|.. AbstractCompositeTransaction
+    AbstractTransaction <|-- AbstractCompositeTransaction
+
     class SimpleCompositeTransaction {
         Map<KhTransactionId, KhTransaction> transactionMap
     }
     CompositeTransaction <|.. SimpleCompositeTransaction
-    AbstractTransaction <|-- SimpleCompositeTransaction
+    AbstractCompositeTransaction <|-- SimpleCompositeTransaction
 
     class SequencedTransaction {
         add()
@@ -143,7 +150,7 @@ classDiagram
         List<KhTransactionId> transactionSequence
     }
     SequencedTransaction <|.. SimpleSequencedTransaction
-    SimpleCompositeTransaction <|-- SimpleSequencedTransaction
+    AbstractCompositeTransaction <|-- SimpleSequencedTransaction
 ```
 
 ```mermaid

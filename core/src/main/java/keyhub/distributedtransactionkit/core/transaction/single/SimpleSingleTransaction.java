@@ -6,28 +6,46 @@ import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 
 import java.util.function.Supplier;
 
-public class SimpleSingleTransaction<R extends KhTransaction.Result> extends AbstractSingleTransaction {
+public class SimpleSingleTransaction<T> extends AbstractSingleTransaction<T> {
 
-    private final Supplier<R> transactionProcess;
+    private final Supplier<T> transactionProcess;
 
     @Override
-    public KhTransaction.Result resolve() throws KhTransactionException {
+    public SimpleSingleTransaction.Result<T> resolve() throws KhTransactionException {
         try {
             var result = transactionProcess.get();
             storeCompensation();
             storeOutbox();
-            return result;
+            return new Result<>(result);
         } catch (Exception e) {
             throw new KhTransactionException(transactionId, e);
         }
     }
 
-    public SimpleSingleTransaction(Supplier<R> transactionProcess, KhTransactionContext transactionContext) {
+    public SimpleSingleTransaction(Supplier<T> transactionProcess, KhTransactionContext transactionContext) {
         super(transactionContext);
         this.transactionProcess = transactionProcess;
     }
 
-    public static <R extends KhTransaction.Result> SimpleSingleTransaction<R> of(Supplier<R> transactionProcess, KhTransactionContext transactionContext) {
+    public static <T> SimpleSingleTransaction<T> of(Supplier<T> transactionProcess, KhTransactionContext transactionContext) {
         return new SimpleSingleTransaction<>(transactionProcess, transactionContext);
+    }
+
+    public static class Result<T> implements KhTransaction.Result<T> {
+        T data;
+
+        Result(T data) {
+            this.data = data;
+        }
+
+        @Override
+        public T get(){
+            return data;
+        }
+
+        @Override
+        public <R> R get(Class<R> returnType) {
+            return returnType.cast(data);
+        }
     }
 }

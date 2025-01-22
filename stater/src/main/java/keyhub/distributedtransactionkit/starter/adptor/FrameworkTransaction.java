@@ -16,10 +16,10 @@ import java.util.function.Supplier;
 
 public abstract class FrameworkTransaction implements KhTransaction {
 
-    protected final KhTransaction khTransaction;
+    protected final KhTransaction innerTransaction;
 
-    public FrameworkTransaction(KhTransaction khTransaction) {
-        this.khTransaction = khTransaction;
+    public FrameworkTransaction(KhTransaction transaction) {
+        this.innerTransaction = transaction;
     }
 
     protected static FrameworkTransactionContext getTransactionContext() {
@@ -28,48 +28,48 @@ public abstract class FrameworkTransaction implements KhTransaction {
 
     @Override
     public TransactionId getTransactionId() {
-        return khTransaction.getTransactionId();
+        return innerTransaction.getTransactionId();
     }
 
     @Override
     public KhTransactionContext getContext() {
-        return khTransaction.getContext();
+        return innerTransaction.getContext();
     }
 
     @Override
     public FrameworkTransaction setCompensation(Supplier<KhTransaction> compensationSupplier) {
-        khTransaction.setCompensation(compensationSupplier);
+        innerTransaction.setCompensation(compensationSupplier);
         return this;
     }
 
     @Override
     public FrameworkTransaction setCompensation(KhTransaction compensation) {
-        khTransaction.setCompensation(compensation);
+        innerTransaction.setCompensation(compensation);
         return this;
     }
 
     @Override
     public FrameworkTransaction setOutbox(Supplier<KhTransaction> outboxSupplier) {
-        khTransaction.setOutbox(outboxSupplier);
+        innerTransaction.setOutbox(outboxSupplier);
         return this;
     }
 
     @Override
     public FrameworkTransaction setOutbox(KhTransaction outbox) {
-        khTransaction.setOutbox(outbox);
+        innerTransaction.setOutbox(outbox);
         return this;
     }
 
     @Override
-    public Result resolve() {
+    public Result<?> resolve() {
         PlatformTransactionManager transactionManager = ApplicationContextProvider.getApplicationContext().getBean(PlatformTransactionManager.class);
         TransactionStatus transactionStatus = null;
         try {
             if (!TransactionSynchronizationManager.isActualTransactionActive()) {
                 transactionStatus = transactionManager.getTransaction(new DefaultTransactionDefinition());
             }
-            TransactionSynchronizationManager.registerSynchronization((FrameworkTransactionContext)khTransaction.getContext());
-            Result result = this.khTransaction.resolve();
+            TransactionSynchronizationManager.registerSynchronization((FrameworkTransactionContext)innerTransaction.getContext());
+            Result<?> result = this.innerTransaction.resolve();
 
             if (transactionStatus != null) {
                 transactionManager.commit(transactionStatus);
