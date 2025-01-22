@@ -1,4 +1,4 @@
 rootProject.name = 'distributed-transaction-kit'
 include 'core'
-include 'stater'
-include 'stater-sandbox'
+include 'starter'
+include 'starter-sandbox'

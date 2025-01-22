@@ -44,13 +44,13 @@ public abstract class AbstractTransaction implements KhTransaction {
     }
 
     protected void storeCompensation() {
-        if(compensation !=null) {
+        if(compensation != null) {
             this.context.storeCompensation(this.transactionId, this.compensation);
         }
     }
 
     protected void storeOutbox() {
-        if(outbox !=null) {
+        if(outbox != null) {
             this.context.storeOutbox(this.transactionId, this.outbox);
         }
     }
