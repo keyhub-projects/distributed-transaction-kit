@@ -9,10 +9,7 @@ classDiagram
     
     class KhTransactionContext
     
-    class KhTransactionResolver
-    
     KhTransaction *--> KhTransactionContext
-    KhTransactionResolver *--> KhTransactionContext
 ```
 
 ```mermaid
@@ -55,6 +52,38 @@ classDiagram
     <<interface>> SequencedTransaction
     CompositeTransaction <|-- SequencedTransaction
 ```
+
+```mermaid
+---
+title: compensation flow
+---
+flowchart
+    start([start transaction])
+    transaction(transact KhTransaction)
+    storeTransactionId(store TransactionId, compensating transaction pair in stack)
+    exception(exception invoked)
+    handleByInterceptor(handle by transaction interceptor)
+    wal(write ahead log)
+    compensateByStore(compensate by store)
+    start --> transaction --> storeTransactionId --> exception --> handleByInterceptor --> wal --> compensateByStore
+```
+
+```mermaid
+---
+title: transaction outbox flow
+---
+flowchart
+    start([start transaction])
+    transaction(transact KhTransaction)
+    storeTransactionId(store TransactionId, outbox transaction pair in stack)
+    finishTransaction(transaction finished)
+    handleByInterceptor(handle by transaction interceptor)
+    invokeOutboxEventByStore(invoke outbox event by store)
+    start --> transaction --> storeTransactionId --> finishTransaction --> handleByInterceptor --> invokeOutboxEventByStore
+```
+
+- Transaction에 의해 관리된다면, 인터셉터가 Transaction을 바라보도록 트랜잭션 범위를 확장한다.
+- 없다면 단일 트랜잭션으로 처리
 
 ```mermaid
 ---
@@ -155,55 +184,16 @@ classDiagram
 
 ```mermaid
 ---
-title: compensation flow
----
-flowchart
-    start([start transaction])
-    transaction(transact KhTransaction)
-    storeTransactionId(store TransactionId, compensating transaction pair in stack)
-    exception(exception invoked)
-    handleByInterceptor(handle by transaction interceptor)
-    wal(write ahead log)
-    compensateByStore(compensate by store)
-    start --> transaction --> storeTransactionId --> exception --> handleByInterceptor --> wal --> compensateByStore
-```
-
-```mermaid
----
-title: transaction outbox flow
----
-flowchart
-    start([start transaction])
-    transaction(transact KhTransaction)
-    storeTransactionId(store TransactionId, outbox transaction pair in stack)
-    finishTransaction(transaction finished)
-    handleByInterceptor(handle by transaction interceptor)
-    invokeOutboxEventByStore(invoke outbox event by store)
-    start --> transaction --> storeTransactionId --> finishTransaction --> handleByInterceptor --> invokeOutboxEventByStore
-```
-
-- Transaction에 의해 관리된다면, 인터셉터가 Transaction을 바라보도록 트랜잭션 범위를 확장한다.
-- 없다면 단일 트랜잭션으로 처리
-
-```mermaid
----
 title: KhTransactionContext
 ---
 classDiagram
     class KhTransactionContext {
     }
     <<interface>> KhTransactionContext
-     AbstractTransaction *-- KhTransactionContext
-    <<abstract>> AbstractTransaction
     
     class AbstractTransactionContext {
     }
     KhTransactionContext <|.. AbstractTransactionContext
-    
-    class SpringTransactionContext {
-    }
-    AbstractTransactionContext <|-- SpringTransactionContext
-    TransactionSynchronization <|.. SpringTransactionContext
     
     class CompensationStore {
     }
@@ -212,7 +202,7 @@ classDiagram
     class SimpleCompensationStore {
     }
     CompensationStore <|.. SimpleCompensationStore
-    SpringTransactionContext *-- CompensationStore
+    AbstractTransactionContext *-- CompensationStore
     
     class OutboxStore {
     }
@@ -221,10 +211,15 @@ classDiagram
     class SimpleOutboxStore {
     }
     OutboxStore <|.. SimpleOutboxStore
-    SpringTransactionContext *-- OutboxStore
+    AbstractTransactionContext *-- OutboxStore
     
     class WriteAheadLogger {
     }
     <<interface>> WriteAheadLogger
-    SpringTransactionContext *-- WriteAheadLogger
+    AbstractTransactionContext *-- WriteAheadLogger
+
+    class FrameworkTransactionContext {
+    }
+    AbstractTransactionContext <|-- FrameworkTransactionContext
+    TransactionSynchronization <|.. FrameworkTransactionContext
 ```

@@ -15,8 +15,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.util.List;
 
-import static org.springframework.web.context.WebApplicationContext.SCOPE_REQUEST;
-
 @Component
 @Scope("thread") // thread 가 맞을까 request 가 맞을까..
 public class FrameworkTransactionContext extends AbstractTransactionContext implements TransactionSynchronization {
