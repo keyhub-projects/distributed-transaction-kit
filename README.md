@@ -276,6 +276,13 @@ public Map outboxSample() {
     ).resolve();
     return result.get(Map.class);
 }
+
+KhTransaction single(String message){
+  return SingleFrameworkTransaction.of(()->{
+    log.info(message);
+    return message;
+  });
+}
 ```
 
 ### 5. SequencedTransaction
@@ -305,6 +312,20 @@ public void compensateSample() throws KhTransactionException {
           single("no1"), single("no2"),
           single("no3").setCompensation(single("no compensation1")).setOutbox(single("no outbox4"))
   ).resolve();
+}
+
+KhTransaction single(String message){
+  return SingleFrameworkTransaction.of(()->{
+    log.info(message);
+    return message;
+  });
+}
+
+KhTransaction failSingle(String message){
+  return SingleFrameworkTransaction.of(()->{
+    log.info(message);
+    throw new RuntimeException("fail");
+  });
 }
 ```
 
