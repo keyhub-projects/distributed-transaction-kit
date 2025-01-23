@@ -263,7 +263,6 @@ KhTransaction utd(String baseUrl) {
 ```java
 @Transactional
 public void compensateSample() throws KhTransactionException {
-  var failTransaction = failSingle("I will be fail!");
   CompositeFrameworkTransaction.of(
                   single("1"),
                   single("I will compensate1!").setCompensation(single("compensation1")).setOutbox(single("no outbox1"))
@@ -276,20 +275,6 @@ public void compensateSample() throws KhTransactionException {
           single("no1"),
           single("no2").setCompensation(single("no compensation1")).setOutbox(single("no outbox4"))
   ).resolve();
-}
-
-KhTransaction single(String message){
-  return SingleFrameworkTransaction.of(()->{
-    log.info(message);
-    return message;
-  });
-}
-
-KhTransaction failSingle(String message){
-  return SingleFrameworkTransaction.of(()->{
-    log.info(message);
-    throw new RuntimeException("fail");
-  });
 }
 
 KhTransaction single(String message){
@@ -312,7 +297,6 @@ KhTransaction single(String message){
 ```java
 @Transactional
 public void compensateSample() throws KhTransactionException {
-  var failTransaction = failSingle("I will be fail!");
   SequencedFrameworkTransaction.of(
                   single("1"),
                   single("I will compensate1!").setCompensation(single("compensation1")).setOutbox(single("no outbox1"))
@@ -331,13 +315,6 @@ KhTransaction single(String message){
   return SingleFrameworkTransaction.of(()->{
     log.info(message);
     return message;
-  });
-}
-
-KhTransaction failSingle(String message){
-  return SingleFrameworkTransaction.of(()->{
-    log.info(message);
-    throw new RuntimeException("fail");
   });
 }
 ```
