@@ -48,20 +48,16 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
         Object body;
     }
 
-    public static class Result implements RemoteTransaction.Result {
-        private final Object rawResult;
-        private final ObjectMapper objectMapper;
-        private Result(SimpleRemoteTransaction transaction) throws KhTransactionException {
-            this.rawResult = transaction.rawResult;
-            this.objectMapper = transaction.objectMapper;
+    public record Result(
+        Object rawResult,
+        ObjectMapper objectMapper
+    ) implements RemoteTransaction.Result {
 
+        Result(SimpleRemoteTransaction transaction) throws KhTransactionException {
+            this(transaction.rawResult, transaction.objectMapper);
             if (transaction.exception != null) {
                 throw new KhTransactionException(transaction.getTransactionId(), transaction.exception);
             }
-        }
-
-        private static Result from(SimpleRemoteTransaction transaction) throws KhTransactionException {
-            return new Result(transaction);
         }
 
         @Override
@@ -117,7 +113,7 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
         } catch (Throwable exception) {
             this.exception = new KhTransactionException(transactionId, exception);
         }
-        return Result.from(this);
+        return new Result(this);
     }
 
     private ResponseSpec send(WebClient.RequestHeadersSpec<?> requestSpec) {

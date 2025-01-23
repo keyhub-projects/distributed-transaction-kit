@@ -7,17 +7,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-@Slf4j
+@Slf4j(topic = "keyhub.transaction.context")
 @Component
 public class AfterTransactionEventHandler {
     @EventListener
     public void handleOutboxResolveEvent(AfterTransactionEvent event) {
-        KhTransaction transaction = event.getTransaction();
+        KhTransaction transaction = event.transaction();
         try {
-            log.info("Received resolve event: {}", transaction);
+            log.info("Received resolve event: {}", transaction.getTransactionId());
             transaction.resolve();
         } catch (Exception exception) {
-            log.error("Failed to resolve transaction", exception);
+            log.warn("Failed to resolve transaction: {}", transaction.getTransactionId(), exception);
             throw new KhTransactionRuntimeException(exception);
         }
     }

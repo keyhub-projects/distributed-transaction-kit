@@ -20,8 +20,11 @@ public class SimpleCompositeTransaction extends AbstractCompositeTransaction imp
             var result = transaction.resolve();
             subTransactionResultMap.put(transactionId, result);
         }
-        subTransactionResultMap.clear();
-        return new SimpleCompositeTransaction.Result(this);
+        try{
+            return new SimpleCompositeTransaction.Result(this);
+        }finally {
+            subTransactionResultMap.clear();
+        }
     }
 
     @Override
@@ -30,12 +33,11 @@ public class SimpleCompositeTransaction extends AbstractCompositeTransaction imp
         return this;
     }
 
-    public static class Result implements CompositeTransaction.Result {
-        Map<TransactionId, KhTransaction.Result<?>> results;
-
-        protected Result(SimpleCompositeTransaction transaction) {
-            this.results = transaction.subTransactionResultMap;
-            transaction.subTransactionResultMap.clear();
+    public record Result(
+            Map<TransactionId, KhTransaction.Result<?>> results
+    ) implements CompositeTransaction.Result {
+        public Result(SimpleCompositeTransaction transaction) {
+            this(Map.copyOf(transaction.subTransactionResultMap));
         }
 
         @Override

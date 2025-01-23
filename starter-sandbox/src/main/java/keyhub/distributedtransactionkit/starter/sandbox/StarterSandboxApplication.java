@@ -1,6 +1,6 @@
 package keyhub.distributedtransactionkit.starter.sandbox;
 
-import keyhub.distributedtransactionkit.starter.component.EnableKhTransaction;
+import keyhub.distributedtransactionkit.starter.EnableKhTransaction;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

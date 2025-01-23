@@ -254,14 +254,61 @@ KhTransaction utd(String baseUrl) {
 ### 4. CompositeTransaction
 
 - 복합 트랜잭션 인터페이스입니다.
+- `CompositeFrameworkTransaction` 구현체를 통해 스프링 트랜잭션과 통합됩니다.
 - KhTransaction을 묶을 수 있습니다.
+  - 재귀적 동작도 가능합니다.
 - 실행 순서를 보장하지 않습니다.
+- 예제
+
+```java
+@Transactional
+public Map outboxSample() {
+    var result = CompositeFrameworkTransaction.of(
+            single("1"), single("2").setCompensation(single("no compensation1")),
+            single("I will invoke outbox1!").setOutbox(single("outbox1")),
+            single("I will invoke outbox2!").setOutbox(single("outbox2"))
+    ).resolve();
+    CompositeFrameworkTransaction.of(
+            single("5"), single("6"),
+            single("I will invoke outbox3!").setOutbox(single("outbox3")),
+            single("I will invoke outbox4!").setOutbox(single("outbox4")),
+            single("7"), single("8")
+    ).resolve();
+    return result.get(Map.class);
+}
+```
 
 ### 5. SequencedTransaction
 
 - 순서 보장 복합 트랜잭션 인터페이스입니다.
+- `SequencedFrameworkTransaction` 구현체를 통해 스프링 트랜잭션과 통합됩니다.
 - KhTransaction을 순서대로 묶을 수 있습니다.
+  - 재귀적 동작도 가능합니다.
 - 실행 순서를 보장합니다.
+- 예제
+
+```java
+@Transactional
+public void compensateSample() throws KhTransactionException {
+  var failTransaction = failSingle("I will be fail!");
+  SequencedFrameworkTransaction.of(
+                  single("1"), single("2"),
+                  single("I will compensate1!").setCompensation(single("compensation1")).setOutbox(single("no outbox1")),
+                  single("3"),
+                  single("4").setOutbox(single("no outbox2")),
+                  single("I will compensate2!").setCompensation(single("compensation2"))
+          ).setOutbox(single("no outbox3"))
+          .resolve();
+  single("I will compensate3!").setCompensation(single("compensation3")).resolve();
+  failTransaction.resolve();
+  SequencedFrameworkTransaction.of(
+          single("no1"), single("no2"),
+          single("no3").setCompensation(single("no compensation1")).setOutbox(single("no outbox4"))
+  ).resolve();
+}
+```
+
+---
 
 ```mermaid
 ---
