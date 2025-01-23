@@ -2,7 +2,7 @@
 
 - KhTransaction은 애플리케이션 레벨에서 분산 트랜잭션을 처리하기 위해 만들어졌습니다.
 - 관심사를 묶으세요.
-  - 하나의 작업에 대한, 트랜잭션 이후의 작업과 관심사 묶입니다.
+  - 하나의 작업에 대한, 트랜잭션 이후의 작업과 관심사를 묶을 수 있습니다.
   - 전체 트랜잭션의 성공은 하나의 작업에 대한 처리와 관심사가 멀죠.
 - KhTransaction은 다음과 같은 기능을 제공합니다:
 1. 보상 트랜잭션
@@ -70,11 +70,6 @@ public class TransactionService {
                     log.info(sample);
                     return sample;
                 })
-                .setCompensation(SingleFrameworkTransaction.of(()->{
-                    String compensationMessage = "It's compensation!";
-                    log.info(compensationMessage);
-                    return compensationMessage;
-                }))
                 .setOutbox(SingleFrameworkTransaction.of(() -> {
                     String outboxMessage = "It's outbox!";
                     log.info(outboxMessage);
@@ -102,11 +97,6 @@ public class TransactionTestService {
                     String compensationMessage = "It's compensation!";
                     log.info(compensationMessage);
                     return compensationMessage;
-                }))
-                .setOutbox(SingleFrameworkTransaction.of(() -> {
-                    String outboxMessage = "It's outbox!";
-                    log.info(outboxMessage);
-                    return outboxMessage;
                 }));
         var result = utd.resolve()
                 .get(String.class);
@@ -187,17 +177,79 @@ classDiagram
 ### 1. KhTransaction
 
 - 모든 트랜잭션의 부모 인터페이스입니다.
-- `FrameworkTransaction` 구현체를 통해 스프링 트랜잭션과 통합됩니다.
 
 ### 2. SingleTransaction
 
 - 단일 트랜잭션 인터페이스입니다.
 - `SingleFrameworkTransaction` 구현체를 통해 스프링 트랜잭션과 통합됩니다.
+- 예제:
+
+```java
+@Transactional
+public String invokeOutboxSample() {
+  
+    // do other process...
+  
+    String result = utd()
+            .setCompensation(compensation())
+            .setOutbox(outbox())
+            .resolve()
+            .get();
+  
+    // do other process...
+  
+    return result;
+}
+
+KhTransaction utd() {
+    return SingleFrameworkTransaction.of(()->{
+      String sample = "Hello World!";
+      log.info(sample);
+      return sample;
+    });
+}
+
+KhTransaction compensation() {
+  return SingleFrameworkTransaction.of(()->{
+    String compensationMessage = "It's compensation!";
+    log.info(compensationMessage);
+    return compensationMessage;
+  });
+}
+
+KhTransaction outbox() {
+    return SingleFrameworkTransaction.of(() -> {
+        String outboxMessage = "It's outbox!";
+        log.info(outboxMessage);
+        return outboxMessage;
+    });
+}
+```
 
 ### 3. RemoteTransaction
 
 - 원격 REST API 요청 기능을 지원하는 단일 트랜잭션 인터페이스입니다.
 - `RemoteFrameworkTransaction` 구현체를 통해 스프링 트랜잭션과 통합됩니다.
+- 예제:
+
+```java
+@Transactional
+public Map<String, String> invokeOutboxSample() throws KhTransactionException {
+  Map<String, String> result = utd(baseUrl)
+          .setCompensation(utd(baseUrl))
+          .setOutbox(utd(baseUrl))
+          .resolve()
+          .get(Map.class);
+  log.info(result.toString());
+  return result;
+}
+
+KhTransaction utd(String baseUrl) {
+  return RemoteFrameworkTransaction.of()
+          .get(baseUrl)
+          .header("Content-Type", "application/json");
+}
+```
 
 ### 4. CompositeTransaction
 
