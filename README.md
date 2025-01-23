@@ -291,6 +291,13 @@ KhTransaction failSingle(String message){
     throw new RuntimeException("fail");
   });
 }
+
+KhTransaction single(String message){
+  return SingleFrameworkTransaction.of(()->{
+    log.info(message);
+    return message;
+  });
+}
 ```
 
 ### 5. SequencedTransaction
