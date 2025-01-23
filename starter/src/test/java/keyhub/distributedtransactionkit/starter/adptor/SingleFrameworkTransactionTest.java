@@ -105,7 +105,7 @@ class SingleFrameworkTransactionTest {
 
         public static class CompensationService {
             @Transactional
-            public void compensateSample(FrameworkTransaction utd) {
+            public void compensateSample(KhTransaction utd) throws KhTransactionException {
                 utd.resolve();
                 throw new RuntimeException("throw Exception");
             }

@@ -32,16 +32,20 @@ public class SimpleSequencedTransaction extends AbstractCompositeTransaction imp
             var result = transaction.resolve();
             subTransactionResultMap.put(transactionId, result);
         }
-        subTransactionIds.clear();
-        subTransactionResultMap.clear();
-        return new SimpleSequencedTransaction.Result(this);
+        try{
+            return new SimpleSequencedTransaction.Result(this);
+        }finally {
+            subTransactionIds.clear();
+            subTransactionResultMap.clear();
+        }
     }
 
-    public static class Result implements CompositeTransaction.Result {
-        SequencedMap<TransactionId, KhTransaction.Result<?>> results;
+    public record Result(
+            SequencedMap<TransactionId, KhTransaction.Result<?>> results
+    ) implements CompositeTransaction.Result {
 
-        protected Result(SimpleSequencedTransaction transaction) {
-            this.results = new LinkedHashMap<>();
+        Result(SimpleSequencedTransaction transaction) {
+            this(new LinkedHashMap<>());
             for(TransactionId id: transaction.subTransactionIds){
                 results.put(id, transaction.subTransactionResultMap.get(id));
             }

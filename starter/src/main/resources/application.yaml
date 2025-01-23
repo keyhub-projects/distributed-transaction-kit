@@ -6,3 +6,7 @@ spring:
     url: jdbc:p6spy:h2:mem:test
     username: su
     password:
+logging:
+  level:
+    keyhub:
+      transaction: debug
