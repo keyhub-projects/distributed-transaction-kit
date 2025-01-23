@@ -55,7 +55,6 @@ class SingleFrameworkTransactionTest {
         assertNotNull(result2);
         assertEquals(sample, result2);
         log.info(result2);
-
     }
 
     @Test
@@ -238,7 +237,6 @@ class SingleFrameworkTransactionTest {
             verify(afterTransactionEventHandler, times(1)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
         }
     }
-
 
     @Nested
     class 종합_작성_통과사례 {

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
     private Request request;
-    Map<String, String> headers;
+    Map<String, String> headers = new HashMap<>();
 
     SimpleRemoteTransaction(KhTransactionContext transactionContext, ObjectMapper objectMapper) {
         super(transactionContext, objectMapper);
