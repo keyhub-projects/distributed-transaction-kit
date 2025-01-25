@@ -24,11 +24,15 @@ repositories {
 dependencies {
     implementation project(":starter")
     testImplementation project(":starter")
+    compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
     implementation 'p6spy:p6spy:3.9.1'
     runtimeOnly 'com.h2database:h2'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.4.0'
+    testImplementation 'io.projectreactor:reactor-test'
+    testImplementation 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {

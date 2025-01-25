@@ -1,20 +1,31 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
     id 'java-library'
     id 'org.springframework.boot' version '3.4.1'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.cadixdev.licenser' version '0.6.1'
+    id 'signing'
+    id 'com.vanniktech.maven.publish' version '0.29.0'
 }
 
 def major = '0'
 def minor = '0'
-def patch = '0'
+def patch = '1'
 
-group = 'io.github.keyhub-projects'
-version = major + '.' + minor + '.' + patch
+def projectName = 'distributed-transaction-kit-starter'
+def group = 'io.github.keyhub-projects'
+def version = major + '.' + minor + '.' + patch
+
+project.group = group
+project.version = version
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+    withJavadocJar()
+    withSourcesJar()
 }
 
 repositories {
@@ -23,14 +34,59 @@ repositories {
 
 dependencies {
     api project(":core")
-    annotationProcessor 'org.projectlombok:lombok:1.18.36'
-    implementation 'p6spy:p6spy:3.9.1'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+license {
+    header = project.file('../LICENSE')
+}
+
+signing {
+    useInMemoryPgpKeys(
+            findProperty("signing.keyId")?.toString(),
+            findProperty("signing.password")?.toString(),
+            findProperty("signing.secretKey")?.toString()
+    )
+    sign(publishing.publications)
+}
+
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+    coordinates(group, projectName, version)
+
+    pom {
+        name.set("Distributed Transaction Kit Starter")
+        description.set("A library for distributed transaction")
+        inceptionYear.set("2025")
+        url.set("https://github.com/keyhub-projects/distributed-transaction-kit")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://opensource.org/licenses/MIT")
+                distribution.set("repo")
+            }
+        }
+        developers {
+            developer {
+                id.set("Iol-lshh")
+                name.set("SUNGHYUK")
+                url.set("https://github.com/Iol-lshh")
+            }
+        }
+        scm {
+            url.set("https://github.com/keyhub-projects/distributed-transaction-kit")
+            connection.set("scm:git:git://github.com/keyhub-projects/distributed-transaction-kit.git")
+            developerConnection.set("scm:git:ssh://git@github.com:keyhub-projects/distributed-transaction-kit.git")
+        }
+    }
 }
