@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class AbstractCompositeTransaction extends AbstractTransaction implements CompositeTransaction {
+public abstract class AbstractCompositeTransaction extends AbstractTransaction {
 
     protected final Map<TransactionId, KhTransaction> subTransactionMap;
     protected final Map<TransactionId, KhTransaction.Result<?>> subTransactionResultMap;

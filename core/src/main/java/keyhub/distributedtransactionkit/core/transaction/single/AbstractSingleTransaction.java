@@ -27,6 +27,9 @@ package keyhub.distributedtransactionkit.core.transaction.single;
 import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.transaction.AbstractTransaction;
+import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
+
+import java.util.function.Supplier;
 
 public abstract class AbstractSingleTransaction<T> extends AbstractTransaction implements SingleTransaction<T> {
     protected KhTransactionException exception;

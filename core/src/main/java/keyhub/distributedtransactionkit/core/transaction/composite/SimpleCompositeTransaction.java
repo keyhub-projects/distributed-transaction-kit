@@ -30,6 +30,7 @@ import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class SimpleCompositeTransaction extends AbstractCompositeTransaction implements CompositeTransaction {
 
@@ -73,10 +74,30 @@ public class SimpleCompositeTransaction extends AbstractCompositeTransaction imp
         public Map<TransactionId, KhTransaction.Result<?>> get() {
             return results;
         }
+    }
 
-        @Override
-        public <R> R get(Class<R> returnType) {
-            return returnType.cast(results);
-        }
+
+    @Override
+    public SimpleCompositeTransaction setCompensation(Supplier<KhTransaction> compensationSupplier) {
+        KhTransaction transaction = compensationSupplier.get();
+        return setCompensation(transaction);
+    }
+
+    @Override
+    public SimpleCompositeTransaction setCompensation(KhTransaction compensation) {
+        this.compensation = compensation;
+        return this;
+    }
+
+    @Override
+    public SimpleCompositeTransaction setOutbox(Supplier<KhTransaction> outboxSupplier) {
+        KhTransaction transaction = outboxSupplier.get();
+        return setOutbox(transaction);
+    }
+
+    @Override
+    public SimpleCompositeTransaction setOutbox(KhTransaction outbox) {
+        this.outbox = outbox;
+        return this;
     }
 }

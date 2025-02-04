@@ -24,8 +24,10 @@
 
 package keyhub.distributedtransactionkit.starter.adptor;
 
+import keyhub.distributedtransactionkit.core.etc.ApplicationContextProvider;
 import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
+import keyhub.distributedtransactionkit.core.transaction.single.SingleTransaction;
 import keyhub.distributedtransactionkit.starter.component.AfterTransactionEventHandler;
 import keyhub.distributedtransactionkit.starter.component.FrameworkTransactionContext;
 import keyhub.distributedtransactionkit.starter.event.AfterTransactionEvent;
@@ -67,7 +69,7 @@ class SingleFrameworkTransactionTest {
     @Test
     void 정상_트랜잭션_동작() throws KhTransactionException {
         String sample = "Hello World!";
-        KhTransaction utd = SingleFrameworkTransaction.of(()->{
+        SingleTransaction<String> utd = SingleFrameworkTransaction.of(()->{
             log.info(sample);
             return sample;
         });
@@ -178,11 +180,11 @@ class SingleFrameworkTransactionTest {
         }
 
         @Test
-        void outbox트랜잭션_동작() {
+        void outbox트랜잭션_동작() throws KhTransactionException {
             String sample = "Hello World!";
             String outboxMessage = "It's outbox!";
 
-            FrameworkTransaction utd = SingleFrameworkTransaction.of(()->{
+            SingleTransaction<String> utd = SingleFrameworkTransaction.of(()->{
                         log.info(sample);
                         return sample;
                     })
@@ -232,17 +234,17 @@ class SingleFrameworkTransactionTest {
 
         public static class OutboxService {
             @Transactional
-            public KhTransaction.Result<?> invokeOutboxSample(FrameworkTransaction utd) {
+            public <T> KhTransaction.Result<T> invokeOutboxSample(SingleTransaction<T> utd) throws KhTransactionException {
                 return utd.resolve();
             }
         }
 
         @Test
-        void 어노테이션_Transactional과_outbox트랜잭션_동작() {
+        void 어노테이션_Transactional과_outbox트랜잭션_동작() throws KhTransactionException {
             String sample = "Hello World!";
             String outboxMessage = "It's outbox!";
 
-            FrameworkTransaction utd = SingleFrameworkTransaction.of(()->{
+            SingleTransaction<String> utd = SingleFrameworkTransaction.of(()->{
                         log.info(sample);
                         return sample;
                     })
@@ -292,8 +294,8 @@ class SingleFrameworkTransactionTest {
 
         public static class TransactionTestService {
             @Transactional
-            public String invokeOutboxSample() {
-                FrameworkTransaction utd = SingleFrameworkTransaction.of(()->{
+            public String invokeOutboxSample() throws KhTransactionException {
+                SingleTransaction<String> utd = SingleFrameworkTransaction.of(()->{
                             String sample = "Hello World!";
                             log.info(sample);
                             return sample;
@@ -314,7 +316,7 @@ class SingleFrameworkTransactionTest {
         }
 
         @Test
-        void 종합Transaction_동작() {
+        void 종합Transaction_동작() throws KhTransactionException {
             var result = transactionTestService.invokeOutboxSample();
             assertNotNull(result);
             assertEquals("Hello World!", result);
@@ -355,8 +357,8 @@ class SingleFrameworkTransactionTest {
 
         public static class TransactionTestService {
             @Transactional
-            public String invokeOutboxSample() {
-                FrameworkTransaction utd = SingleFrameworkTransaction.of(()->{
+            public String invokeOutboxSample() throws KhTransactionException {
+                SingleTransaction<String> utd = SingleFrameworkTransaction.of(()->{
                             String sample = "Hello World!";
                             log.info(sample);
                             return sample;

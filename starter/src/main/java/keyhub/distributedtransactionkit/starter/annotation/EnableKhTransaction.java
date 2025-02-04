@@ -22,14 +22,24 @@
  * SOFTWARE.
  */
 
-package keyhub.distributedtransactionkit.core;
+package keyhub.distributedtransactionkit.starter.annotation;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import keyhub.distributedtransactionkit.starter.component.AfterTransactionEventHandler;
+import keyhub.distributedtransactionkit.starter.component.FrameworkTransactionContext;
+import keyhub.distributedtransactionkit.starter.component.KhTransactionKitApplicationConfig;
+import keyhub.distributedtransactionkit.starter.component.ThreadScopeConfig;
+import org.springframework.context.annotation.Import;
 
-@SpringBootApplication
-public class CoreApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(CoreApplication.class, args);
-    }
+import java.lang.annotation.*;
+
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Import({
+        AfterTransactionEventHandler.class,
+        FrameworkTransactionContext.class,
+        KhTransactionKitApplicationConfig.class,
+        ThreadScopeConfig.class
+})
+public @interface EnableKhTransaction {
 }

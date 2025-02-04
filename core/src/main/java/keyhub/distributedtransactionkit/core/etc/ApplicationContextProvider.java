@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package keyhub.distributedtransactionkit.starter.adptor;
+package keyhub.distributedtransactionkit.core.etc;
 
 import jakarta.annotation.Nonnull;
 import org.springframework.beans.BeansException;

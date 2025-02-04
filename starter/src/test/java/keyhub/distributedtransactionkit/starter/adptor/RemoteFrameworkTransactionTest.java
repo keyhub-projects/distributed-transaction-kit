@@ -26,6 +26,8 @@ package keyhub.distributedtransactionkit.starter.adptor;
 
 import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
+import keyhub.distributedtransactionkit.core.transaction.remote.RemoteTransaction;
+import keyhub.distributedtransactionkit.core.transaction.single.SingleTransaction;
 import keyhub.distributedtransactionkit.starter.component.AfterTransactionEventHandler;
 import keyhub.distributedtransactionkit.starter.component.FrameworkTransactionContext;
 import keyhub.distributedtransactionkit.starter.event.AfterTransactionEvent;
@@ -98,7 +100,7 @@ class RemoteFrameworkTransactionTest {
                 .setBody(message)
                 .addHeader("Content-Type", "application/json"));
         WebClient webClient = WebClient.builder().baseUrl(baseUrl).build();
-        KhTransaction utd = SingleFrameworkTransaction.of(()-> webClient
+        SingleTransaction<String> utd = SingleFrameworkTransaction.of(()-> webClient
                 .get()
                 .uri("/test")
                 .retrieve()
@@ -110,7 +112,7 @@ class RemoteFrameworkTransactionTest {
 
         assertNotNull(result);
         log.info(result.toString());
-        var result2 = result.get(String.class);
+        var result2 = result.get();
         assertNotNull(result2);
         assertEquals(message, result2);
         log.info(result2);
@@ -123,7 +125,7 @@ class RemoteFrameworkTransactionTest {
         mockWebServer.enqueue(new MockResponse()
                 .setBody(message)
                 .addHeader("Content-Type", "application/json"));
-        KhTransaction utd = RemoteFrameworkTransaction.of()
+        RemoteTransaction utd = RemoteFrameworkTransaction.of()
                 .get(baseUrl)
                 .header("Content-Type", "application/json");
 
@@ -166,7 +168,7 @@ class RemoteFrameworkTransactionTest {
 
         public static class CompensationService {
             @Transactional
-            public void compensateSample(FrameworkTransaction utd) {
+            public void compensateSample(RemoteTransaction utd) throws KhTransactionException {
                 utd.resolve();
                 throw new RuntimeException("throw Exception");
             }
@@ -185,7 +187,7 @@ class RemoteFrameworkTransactionTest {
                     .setBody(compensateJson)
                     .addHeader("Content-Type", "application/json"));
 
-            FrameworkTransaction utd = RemoteFrameworkTransaction.of()
+            RemoteTransaction utd = RemoteFrameworkTransaction.of()
                     .get(baseUrl)
                     .header("Content-Type", "application/json")
                     .setCompensation(
@@ -289,13 +291,13 @@ class RemoteFrameworkTransactionTest {
 
         public static class OutboxService {
             @Transactional
-            public KhTransaction.Result<?> invokeOutboxSample(FrameworkTransaction utd) {
+            public RemoteTransaction.Result invokeOutboxSample(RemoteTransaction utd) throws KhTransactionException {
                 return utd.resolve();
             }
         }
 
         @Test
-        void 어노테이션_Transactional과_outbox트랜잭션_동작() {
+        void 어노테이션_Transactional과_outbox트랜잭션_동작() throws KhTransactionException {
             String utdMessage = "It will outbox";
             String utdJson = "{\"message\": \"" + utdMessage +"\"}";
             String outboxMessage = "It's outbox!";
@@ -307,7 +309,7 @@ class RemoteFrameworkTransactionTest {
                     .setBody(outboxJson)
                     .addHeader("Content-Type", "application/json"));
 
-            FrameworkTransaction utd = RemoteFrameworkTransaction.of()
+            RemoteTransaction utd = RemoteFrameworkTransaction.of()
                     .get(baseUrl)
                     .header("Content-Type", "application/json")
                     .setOutbox(RemoteFrameworkTransaction.of()
@@ -357,7 +359,7 @@ class RemoteFrameworkTransactionTest {
 
         public static class TransactionTestService {
             @Transactional
-            public Map<String, String> invokeOutboxSample(KhTransaction utd) throws KhTransactionException {
+            public Map<String, String> invokeOutboxSample(RemoteTransaction utd) throws KhTransactionException {
                 return utd.resolve()
                         .get(Map.class);
             }
@@ -376,7 +378,7 @@ class RemoteFrameworkTransactionTest {
                     .setBody(outboxJson)
                     .addHeader("Content-Type", "application/json"));
 
-            FrameworkTransaction utd = RemoteFrameworkTransaction.of()
+            RemoteTransaction utd = RemoteFrameworkTransaction.of()
                     .get(baseUrl)
                     .header("Content-Type", "application/json")
                     .setCompensation(RemoteFrameworkTransaction.of()
@@ -426,7 +428,7 @@ class RemoteFrameworkTransactionTest {
 
         public static class TransactionTestService {
             @Transactional
-            public Map<String, String> invokeOutboxSample(KhTransaction utd) throws KhTransactionException {
+            public Map<String, String> invokeOutboxSample(RemoteTransaction utd) throws KhTransactionException {
                 var result = utd.resolve()
                         .get(Map.class);
                 invokeException();
@@ -451,7 +453,7 @@ class RemoteFrameworkTransactionTest {
                     .setBody(compensateJson)
                     .addHeader("Content-Type", "application/json"));
 
-            FrameworkTransaction utd = RemoteFrameworkTransaction.of()
+            RemoteTransaction utd = RemoteFrameworkTransaction.of()
                     .get(baseUrl)
                     .header("Content-Type", "application/json")
                     .setCompensation(RemoteFrameworkTransaction.of()
@@ -510,7 +512,7 @@ class RemoteFrameworkTransactionTest {
                 return result;
             }
 
-            KhTransaction utd(String baseUrl) {
+            RemoteTransaction utd(String baseUrl) {
                 return RemoteFrameworkTransaction.of()
                         .get(baseUrl)
                         .header("Content-Type", "application/json");

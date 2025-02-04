@@ -1,15 +1,19 @@
 plugins {
-    id 'java-library'
+    id 'java'
     id 'org.springframework.boot' version '3.4.1'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
 def major = '0'
 def minor = '0'
-def patch = '0'
+def patch = '4'
 
-group = 'io.github.keyhub-projects'
-version = major + '.' + minor + '.' + patch
+def projectName = 'distributed-transaction-kit-starter'
+def group = 'io.github.keyhub-projects'
+def version = major + '.' + minor + '.' + patch
+
+project.group = group
+project.version = version
 
 java {
     toolchain {
@@ -21,16 +25,24 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    mapstructVersion = "1.5.5.Final"
+    lombokVersion = "1.18.36"
+}
+
 dependencies {
-    implementation project(":starter")
-    testImplementation project(":starter")
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+//    implementation project(":starter")
+    implementation 'io.github.keyhub-projects:distributed-transaction-kit-starter:'+version
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.4.1'
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    compileOnly "org.mapstruct:mapstruct:${mapstructVersion}", "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}", "org.projectlombok:lombok:${lombokVersion}"
     implementation 'p6spy:p6spy:3.9.1'
     runtimeOnly 'com.h2database:h2'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.4.0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.junit.platform:junit-platform-launcher'
 }

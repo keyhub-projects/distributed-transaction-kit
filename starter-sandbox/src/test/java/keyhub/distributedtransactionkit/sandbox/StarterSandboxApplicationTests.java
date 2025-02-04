@@ -1,4 +1,4 @@
-package keyhub.distributedtransactionkit.starter.sandbox;
+package keyhub.distributedtransactionkit.sandbox;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

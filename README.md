@@ -147,7 +147,7 @@ classDiagram
 - Spring 트랜잭션과 통합.
 
 ```java
-KhTransaction utd() {
+SingleTransaction utd() {
     return SingleFrameworkTransaction.of(() -> {
         String sample = "Hello World!";
         log.info(sample);
@@ -161,7 +161,7 @@ KhTransaction utd() {
 - REST API 요청과 통합된 트랜잭션.
 
 ```java
-KhTransaction utd(String baseUrl) {
+RemoteTransaction utd(String baseUrl) {
     return RemoteFrameworkTransaction.of()
             .get(baseUrl)
             .header("Content-Type", "application/json");
@@ -173,35 +173,106 @@ KhTransaction utd(String baseUrl) {
 - 여러 트랜잭션을 묶어 관리.
 - 실행 순서를 보장하지 않음.
 
+```java
+@Transactional
+public void executeCompositeTransaction() throws KhTransactionException {
+    CompositeFrameworkTransaction.of(
+                    single("1"),
+                    single("I will compensate1!")
+                            .setCompensation(single("compensation1"))
+                            .setOutbox(single("no outbox1"))
+            )
+            .setOutbox(single("no outbox3"))
+            .setCompensation(single("compensation2"))
+            .resolve();
+
+    single("I will compensate3!")
+            .setCompensation(single("compensation3"))
+            .resolve();
+
+    throw new RuntimeException("CompositeTransaction failed");
+    
+    // 아래 코드는 실행되지 않음 (예외 발생으로 인해)
+    CompositeFrameworkTransaction.of(
+    single("no1"),
+    single("no2")
+                    .setCompensation(single("no compensation1"))
+                    .setOutbox(single("no outbox4"))
+    ).resolve();
+}
+```
+
 ### 5. **SequencedTransaction**
 
 - 실행 순서를 보장하는 복합 트랜잭션.
+
+```java
+@Transactional
+public void executeSequencedTransaction() throws KhTransactionException {
+    SequencedFrameworkTransaction.of(
+                    single("1"),
+                    single("I will compensate1!")
+                            .setCompensation(single("compensation1"))
+                            .setOutbox(single("no outbox1"))
+            )
+            .setOutbox(single("no outbox3"))
+            .setCompensation(single("compensation2"))
+            .resolve();
+
+    single("I will compensate3!")
+            .setCompensation(single("compensation3"))
+            .resolve();
+    
+    throw new RuntimeException("SequencedTransaction failed");
+
+    // 아래 코드는 실행되지 않음 (예외 발생으로 인해)
+    SequencedFrameworkTransaction.of(
+    single("no1"),
+    single("no2")
+                    .setCompensation(single("no compensation1"))
+                    .setOutbox(single("no outbox4"))
+    ).resolve();
+}
+```
 
 ---
 
 ## Spring과의 통합
 
-1. **의존성 추가**
+### 1. **의존성 추가**
 
-- 아직 메이븐 미배포
+- [Maven Repository](https://mvnrepository.com/artifact/io.github.keyhub-projects/distributed-transaction-kit-starter)
 
-   ```xml
-   ```
+#### Maven
 
-   ```gradle
-   ```
+```xml
+<!-- https://mvnrepository.com/artifact/io.github.keyhub-projects/distributed-transaction-kit-core -->
+<dependency>
+    <groupId>io.github.keyhub-projects</groupId>
+    <artifactId>distributed-transaction-kit-core</artifactId>
+    <version>0.0.4</version>
+    <type>pom</type>
+</dependency>
+```
 
-2. **트랜잭션 관리 설정**
+#### Gradle
 
-   ```java
-   @EnableKhTransaction
-   @SpringBootApplication
-   public class StarterApplication {
-       public static void main(String[] args) {
-           SpringApplication.run(StarterApplication.class, args);
-       }
+```gradle
+// https://mvnrepository.com/artifact/io.github.keyhub-projects/distributed-transaction-kit-core
+implementation 'io.github.keyhub-projects:distributed-transaction-kit-core:0.0.4'
+```
+
+### 2. **트랜잭션 관리 설정**
+
+```java
+@EnableKhTransaction
+@SpringBootApplication
+public class StarterApplication {
+   public static void main(String[] args) {
+       SpringApplication.run(StarterApplication.class, args);
    }
-   ```
+}
+```
 
 ---
 

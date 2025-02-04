@@ -27,11 +27,7 @@ package keyhub.distributedtransactionkit.core.transaction.remote;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -41,9 +37,9 @@ import reactor.core.publisher.Mono;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-@Slf4j
 public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
     private Request request;
     Map<String, String> headers = new HashMap<>();
@@ -64,12 +60,12 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
         return new SimpleRemoteTransaction(transactionContext, objectMapper);
     }
 
-    @Builder @AllArgsConstructor @NoArgsConstructor @Getter
-    public static class Request {
-        HttpMethod method;
-        String url;
-        Map<String, Object> parameters;
-        Object body;
+    public record Request(
+            HttpMethod method,
+            String url,
+            Map<String, Object> parameters,
+            Object body
+    ) {
     }
 
     public record Result(
@@ -90,8 +86,31 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
         }
 
         @Override
+        public Optional<Object> optional() {
+            return Optional.ofNullable(rawResult);
+        }
+
+        @Override
+        public List<Object> list() {
+            if (rawResult instanceof List<?> tempList) {
+                return tempList.stream()
+                        .map(element -> (Object) element)
+                        .toList();
+            }
+            throw new ClassCastException(rawResult + " Cannot cast");
+        }
+
+        @Override
         public <T> T get(Class<T> returnType) {
             return objectMapper.convertValue(rawResult, returnType);
+        }
+
+        @Override
+        public <R> Optional<R> optional(Class<R> returnType) {
+            if(rawResult == null) {
+                return Optional.empty();
+            }
+            return Optional.of(objectMapper.convertValue(rawResult, returnType));
         }
 
         @Override
@@ -107,12 +126,7 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
 
     @Override
     public SimpleRemoteTransaction request(HttpMethod method, String url, Map<String, Object> parameters, Object body) {
-        this.request = Request.builder()
-                .method(method)
-                .url(url)
-                .parameters(parameters)
-                .body(body)
-                .build();
+        this.request = new Request(method, url, parameters, body);
         return this;
     }
 
@@ -152,8 +166,8 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
     }
 
     private String generateParameterQuery() {
-        String url = this.request.getUrl();
-        Map<String, Object> parameters = this.request.getParameters();
+        String url = this.request.url();
+        Map<String, Object> parameters = this.request.parameters();
 
         StringBuilder query = new StringBuilder(url);
         if (parameters == null || parameters.isEmpty()) {
@@ -174,7 +188,7 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
     }
 
     private WebClient.RequestHeadersSpec<?> setQuery(WebClient webClient, String targetUrl) {
-        HttpMethod method = this.request.getMethod();
+        HttpMethod method = this.request.method();
         return switch (method.name()) {
             case "GET" -> webClient.get().uri(targetUrl);
             case "POST" -> webClient.post().uri(targetUrl);
@@ -191,12 +205,37 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
     }
 
     private WebClient.RequestHeadersSpec<?> setBody(WebClient.RequestHeadersSpec<?> requestSpec, Request request) {
-        Object body = request.getBody();
+        Object body = request.body();
         if (body == null) {
             return requestSpec;
         }
         WebClient.RequestBodyUriSpec casted = (WebClient.RequestBodyUriSpec) requestSpec;
         casted.bodyValue(body);
         return casted;
+    }
+
+
+    @Override
+    public SimpleRemoteTransaction setCompensation(Supplier<KhTransaction> compensationSupplier) {
+        KhTransaction transaction = compensationSupplier.get();
+        return setCompensation(transaction);
+    }
+
+    @Override
+    public SimpleRemoteTransaction setCompensation(KhTransaction compensation) {
+        this.compensation = compensation;
+        return this;
+    }
+
+    @Override
+    public SimpleRemoteTransaction setOutbox(Supplier<KhTransaction> outboxSupplier) {
+        KhTransaction transaction = outboxSupplier.get();
+        return setOutbox(transaction);
+    }
+
+    @Override
+    public SimpleRemoteTransaction setOutbox(KhTransaction outbox) {
+        this.outbox = outbox;
+        return this;
     }
 }
