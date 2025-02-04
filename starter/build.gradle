@@ -11,7 +11,7 @@ plugins {
 
 def major = '0'
 def minor = '0'
-def patch = '1'
+def patch = '4'
 
 def projectName = 'distributed-transaction-kit-starter'
 def group = 'io.github.keyhub-projects'
@@ -32,8 +32,7 @@ repositories {
 
 dependencies {
     api project(":core")
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+//    api 'io.github.keyhub-projects:distributed-transaction-kit-core:0.0.2'
     runtimeOnly 'com.h2database:h2'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
@@ -46,7 +45,7 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-tasks.named('jar') {
+tasks.named('bootJar') {
     enabled = false
 }
 

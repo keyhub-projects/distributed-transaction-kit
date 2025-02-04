@@ -25,10 +25,13 @@
 package keyhub.distributedtransactionkit.core.transaction.composite;
 
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
+import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
+import keyhub.distributedtransactionkit.core.transaction.remote.RemoteTransaction;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 public interface CompositeTransaction extends KhTransaction {
 
@@ -36,9 +39,25 @@ public interface CompositeTransaction extends KhTransaction {
         return new SimpleCompositeTransaction(transactionContext);
     }
 
-    CompositeTransaction add(KhTransaction transaction);
-
     interface Result extends KhTransaction.Result<Map<TransactionId, KhTransaction.Result<?>>>{
+
         KhTransaction.Result<?> get(TransactionId transactionId);
     }
+
+    CompositeTransaction add(KhTransaction transaction);
+
+    @Override
+    Result resolve() throws KhTransactionException;
+
+    @Override
+    CompositeTransaction setCompensation(Supplier<KhTransaction> compensationSupplier);
+
+    @Override
+    CompositeTransaction setCompensation(KhTransaction compensation);
+
+    @Override
+    CompositeTransaction setOutbox(Supplier<KhTransaction> outboxSupplier);
+
+    @Override
+    CompositeTransaction setOutbox(KhTransaction outbox);
 }

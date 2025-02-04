@@ -26,12 +26,15 @@ package keyhub.distributedtransactionkit.core.transaction.remote;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
+import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.single.SingleTransaction;
 import org.springframework.http.HttpMethod;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 public interface RemoteTransaction extends SingleTransaction<Object> {
 
@@ -43,10 +46,7 @@ public interface RemoteTransaction extends SingleTransaction<Object> {
         return new SimpleRemoteTransaction(transactionContext, objectMapper);
     }
 
-    interface Result extends KhTransaction.Result<Object> {
-        Object get();
-        <T> T get(Class<T> returnType);
-        <T> List<T> list(Class<T> returnType);
+    interface Result extends SingleTransaction.Result<Object> {
     }
 
     RemoteTransaction header(String key, String value);
@@ -74,4 +74,19 @@ public interface RemoteTransaction extends SingleTransaction<Object> {
     RemoteTransaction request(HttpMethod method, String url, Object body);
 
     RemoteTransaction request(HttpMethod method, String url, Map<String, Object> parameters, Object body);
+
+    @Override
+    Result resolve() throws KhTransactionException;
+
+    @Override
+    RemoteTransaction setCompensation(Supplier<KhTransaction> compensationSupplier);
+
+    @Override
+    RemoteTransaction setCompensation(KhTransaction compensation);
+
+    @Override
+    RemoteTransaction setOutbox(Supplier<KhTransaction> outboxSupplier);
+
+    @Override
+    RemoteTransaction setOutbox(KhTransaction outbox);
 }

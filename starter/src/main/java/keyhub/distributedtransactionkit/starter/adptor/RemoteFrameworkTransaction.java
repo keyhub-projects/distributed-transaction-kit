@@ -25,11 +25,13 @@
 package keyhub.distributedtransactionkit.starter.adptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.remote.RemoteTransaction;
 import keyhub.distributedtransactionkit.starter.component.FrameworkTransactionContext;
 import org.springframework.http.HttpMethod;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class RemoteFrameworkTransaction extends SingleFrameworkTransaction<Object> implements RemoteTransaction {
 
@@ -124,6 +126,36 @@ public class RemoteFrameworkTransaction extends SingleFrameworkTransaction<Objec
     @Override
     public RemoteFrameworkTransaction request(HttpMethod method, String url, Map<String, Object> parameters, Object body) {
         ((RemoteTransaction)this.innerTransaction).request(method, url, parameters, body);
+        return this;
+    }
+
+    @Override
+    public RemoteTransaction.Result resolve() {
+        var result = resolving();
+        return (RemoteTransaction.Result) result;
+    }
+
+    @Override
+    public RemoteFrameworkTransaction setCompensation(Supplier<KhTransaction> compensationSupplier) {
+        innerTransaction.setCompensation(compensationSupplier);
+        return this;
+    }
+
+    @Override
+    public RemoteFrameworkTransaction setCompensation(KhTransaction compensation) {
+        innerTransaction.setCompensation(compensation);
+        return this;
+    }
+
+    @Override
+    public RemoteFrameworkTransaction setOutbox(Supplier<KhTransaction> outboxSupplier) {
+        innerTransaction.setOutbox(outboxSupplier);
+        return this;
+    }
+
+    @Override
+    public RemoteFrameworkTransaction setOutbox(KhTransaction outbox) {
+        innerTransaction.setOutbox(outbox);
         return this;
     }
 }

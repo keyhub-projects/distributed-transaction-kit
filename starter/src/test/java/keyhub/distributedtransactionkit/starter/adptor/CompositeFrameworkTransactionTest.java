@@ -27,6 +27,8 @@ package keyhub.distributedtransactionkit.starter.adptor;
 import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.exception.KhTransactionRuntimeException;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
+import keyhub.distributedtransactionkit.core.transaction.TransactionId;
+import keyhub.distributedtransactionkit.core.transaction.composite.CompositeTransaction;
 import keyhub.distributedtransactionkit.starter.component.AfterTransactionEventHandler;
 import keyhub.distributedtransactionkit.starter.component.FrameworkTransactionContext;
 import keyhub.distributedtransactionkit.starter.event.AfterTransactionEvent;
@@ -62,13 +64,13 @@ class CompositeFrameworkTransactionTest {
 
         @Test
         void 정상_트랜잭션_동작() throws KhTransactionException {
-            KhTransaction utd = CompositeFrameworkTransaction.of(
+            CompositeTransaction utd = CompositeFrameworkTransaction.of(
                             single("1"), single("2"), single("3")
                     );
             var result = utd.resolve();
             assertNotNull(result);
             log.info(result.toString());
-            var result2 = result.get(Map.class);
+            var result2 = result.get();
             assertNotNull(result2);
             log.info(result2.toString());
             assertEquals(3, result2.size());
@@ -105,8 +107,8 @@ class CompositeFrameworkTransactionTest {
 
         public static class OutboxService {
             @Transactional
-            public Map outboxSample() {
-                var result = CompositeFrameworkTransaction.of(
+            public Map<TransactionId, KhTransaction.Result<?>> outboxSample() {
+                CompositeTransaction.Result result = CompositeFrameworkTransaction.of(
                         single("1"), single("2"),
                         single("I will invoke outbox1!").setOutbox(single("outbox1")),
                         single("I will invoke outbox2!").setOutbox(single("outbox2"))
@@ -117,7 +119,7 @@ class CompositeFrameworkTransactionTest {
                         single("I will invoke outbox4!").setOutbox(single("outbox4")),
                         single("7"), single("8")
                 ).resolve();
-                return result.get(Map.class);
+                return result.get();
             }
         }
 

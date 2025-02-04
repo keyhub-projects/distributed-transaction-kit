@@ -44,7 +44,6 @@ public interface KhTransaction {
 
     interface Result<T> {
         T get();
-        <R> R get(Class<R> returnType);
     }
 
     Result<?> resolve() throws KhTransactionException;

@@ -24,7 +24,7 @@
 
 package keyhub.distributedtransactionkit.starter.component;
 
-import keyhub.distributedtransactionkit.starter.adptor.ApplicationContextProvider;
+import keyhub.distributedtransactionkit.core.etc.ApplicationContextProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

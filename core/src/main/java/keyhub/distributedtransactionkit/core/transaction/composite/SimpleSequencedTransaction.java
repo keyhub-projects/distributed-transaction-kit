@@ -30,6 +30,7 @@ import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class SimpleSequencedTransaction extends AbstractCompositeTransaction implements SequencedTransaction {
     protected final List<TransactionId> subTransactionIds;
@@ -47,7 +48,7 @@ public class SimpleSequencedTransaction extends AbstractCompositeTransaction imp
     }
 
     @Override
-    public SimpleSequencedTransaction.Result resolve() throws KhTransactionException {
+    public Result resolve() throws KhTransactionException {
         for(TransactionId transactionId : subTransactionIds) {
             KhTransaction transaction = subTransactionMap.get(transactionId);
             if (transaction == null) {
@@ -57,7 +58,7 @@ public class SimpleSequencedTransaction extends AbstractCompositeTransaction imp
             subTransactionResultMap.put(transactionId, result);
         }
         try{
-            return new SimpleSequencedTransaction.Result(this);
+            return new Result(this);
         }finally {
             subTransactionIds.clear();
             subTransactionResultMap.clear();
@@ -66,7 +67,7 @@ public class SimpleSequencedTransaction extends AbstractCompositeTransaction imp
 
     public record Result(
             SequencedMap<TransactionId, KhTransaction.Result<?>> results
-    ) implements CompositeTransaction.Result {
+    ) implements SequencedTransaction.Result {
 
         Result(SimpleSequencedTransaction transaction) {
             this(new LinkedHashMap<>());
@@ -84,10 +85,30 @@ public class SimpleSequencedTransaction extends AbstractCompositeTransaction imp
         public SequencedMap<TransactionId, KhTransaction.Result<?>> get() {
             return results;
         }
+    }
 
-        @Override
-        public <R> R get(Class<R> returnType) {
-            return returnType.cast(results);
-        }
+
+    @Override
+    public SimpleSequencedTransaction setCompensation(Supplier<KhTransaction> compensationSupplier) {
+        KhTransaction transaction = compensationSupplier.get();
+        return setCompensation(transaction);
+    }
+
+    @Override
+    public SimpleSequencedTransaction setCompensation(KhTransaction compensation) {
+        this.compensation = compensation;
+        return this;
+    }
+
+    @Override
+    public SimpleSequencedTransaction setOutbox(Supplier<KhTransaction> outboxSupplier) {
+        KhTransaction transaction = outboxSupplier.get();
+        return setOutbox(transaction);
+    }
+
+    @Override
+    public SimpleSequencedTransaction setOutbox(KhTransaction outbox) {
+        this.outbox = outbox;
+        return this;
     }
 }

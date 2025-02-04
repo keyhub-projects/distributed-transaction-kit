@@ -29,7 +29,8 @@ import keyhub.distributedtransactionkit.core.exception.KhTransactionRuntimeExcep
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 import keyhub.distributedtransactionkit.starter.event.AfterTransactionEvent;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -38,16 +39,17 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.util.List;
 
-@Slf4j(topic = "keyhub.transaction.context")
 @Component
 @Scope("thread") // thread 가 맞을까 request 가 맞을까..
 public class FrameworkTransactionContext extends AbstractTransactionContext implements TransactionSynchronization {
 
     private final ApplicationEventPublisher eventPublisher;
+    private final Logger log;
 
     public FrameworkTransactionContext(ApplicationEventPublisher applicationEventPublisher) {
         super();
         this.eventPublisher = applicationEventPublisher;
+        this.log = LoggerFactory.getLogger(FrameworkTransactionContext.class);;
     }
 
     public void invokeAfterTransactionEvent(KhTransaction transaction) {

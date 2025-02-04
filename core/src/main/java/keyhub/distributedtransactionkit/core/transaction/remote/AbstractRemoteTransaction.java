@@ -26,10 +26,12 @@ package keyhub.distributedtransactionkit.core.transaction.remote;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
+import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.single.AbstractSingleTransaction;
 import org.springframework.http.HttpMethod;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 public abstract class AbstractRemoteTransaction extends AbstractSingleTransaction<Object> implements RemoteTransaction {
     protected final ObjectMapper objectMapper;

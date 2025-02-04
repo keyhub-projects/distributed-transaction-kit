@@ -25,10 +25,37 @@
 package keyhub.distributedtransactionkit.core.transaction.composite;
 
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
+import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
+import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
+import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 
-public interface SequencedTransaction extends CompositeTransaction {
+import java.util.SequencedMap;
+import java.util.function.Supplier;
+
+public interface SequencedTransaction extends KhTransaction {
 
     static SequencedTransaction from(KhTransactionContext transactionContext) {
         return new SimpleSequencedTransaction(transactionContext);
     }
+
+    interface Result extends KhTransaction.Result<SequencedMap<TransactionId, KhTransaction.Result<?>>>{
+        KhTransaction.Result<?> get(TransactionId transactionId);
+    }
+
+    SequencedTransaction add(KhTransaction transaction);
+
+    @Override
+    Result resolve() throws KhTransactionException;
+
+    @Override
+    SequencedTransaction setCompensation(Supplier<KhTransaction> compensationSupplier);
+
+    @Override
+    SequencedTransaction setCompensation(KhTransaction compensation);
+
+    @Override
+    SequencedTransaction setOutbox(Supplier<KhTransaction> outboxSupplier);
+
+    @Override
+    SequencedTransaction setOutbox(KhTransaction outbox);
 }

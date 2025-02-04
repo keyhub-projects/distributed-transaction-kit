@@ -28,6 +28,8 @@ import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.composite.CompositeTransaction;
 import keyhub.distributedtransactionkit.starter.component.FrameworkTransactionContext;
 
+import java.util.function.Supplier;
+
 public class CompositeFrameworkTransaction extends FrameworkTransaction implements CompositeTransaction {
 
     public CompositeFrameworkTransaction(KhTransaction transaction) {
@@ -51,6 +53,36 @@ public class CompositeFrameworkTransaction extends FrameworkTransaction implemen
     @Override
     public CompositeFrameworkTransaction add(KhTransaction transaction) {
         ((CompositeTransaction)this.innerTransaction).add(transaction);
+        return this;
+    }
+
+    @Override
+    public CompositeTransaction.Result resolve() {
+        var result = resolving();
+        return (CompositeTransaction.Result) result;
+    }
+
+    @Override
+    public CompositeFrameworkTransaction setCompensation(Supplier<KhTransaction> compensationSupplier) {
+        innerTransaction.setCompensation(compensationSupplier);
+        return this;
+    }
+
+    @Override
+    public CompositeFrameworkTransaction setCompensation(KhTransaction compensation) {
+        innerTransaction.setCompensation(compensation);
+        return this;
+    }
+
+    @Override
+    public CompositeFrameworkTransaction setOutbox(Supplier<KhTransaction> outboxSupplier) {
+        innerTransaction.setOutbox(outboxSupplier);
+        return this;
+    }
+
+    @Override
+    public CompositeFrameworkTransaction setOutbox(KhTransaction outbox) {
+        innerTransaction.setOutbox(outbox);
         return this;
     }
 }

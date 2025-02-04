@@ -24,6 +24,7 @@
 
 package keyhub.distributedtransactionkit.starter.adptor;
 
+import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.single.SingleTransaction;
 import keyhub.distributedtransactionkit.starter.component.FrameworkTransactionContext;
 
@@ -38,5 +39,35 @@ public class SingleFrameworkTransaction<T> extends FrameworkTransaction implemen
         FrameworkTransactionContext context = FrameworkTransaction.getTransactionContext();
         SingleTransaction<T> transaction = SingleTransaction.of(transactionProcess, context);
         return new SingleFrameworkTransaction<>(transaction);
+    }
+
+    @Override
+    public SingleFrameworkTransaction<T> setCompensation(Supplier<KhTransaction> compensationSupplier) {
+        innerTransaction.setCompensation(compensationSupplier);
+        return this;
+    }
+
+    @Override
+    public SingleFrameworkTransaction<T> setCompensation(KhTransaction compensation) {
+        innerTransaction.setCompensation(compensation);
+        return this;
+    }
+
+    @Override
+    public SingleFrameworkTransaction<T> setOutbox(Supplier<KhTransaction> outboxSupplier) {
+        innerTransaction.setOutbox(outboxSupplier);
+        return this;
+    }
+
+    @Override
+    public SingleFrameworkTransaction<T> setOutbox(KhTransaction outbox) {
+        innerTransaction.setOutbox(outbox);
+        return this;
+    }
+
+    @Override
+    public SingleTransaction.Result<T> resolve() {
+        var result = resolving();
+        return (SingleTransaction.Result<T>) result;
     }
 }

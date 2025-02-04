@@ -25,6 +25,7 @@
 package keyhub.distributedtransactionkit.starter.adptor;
 
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
+import keyhub.distributedtransactionkit.core.etc.ApplicationContextProvider;
 import keyhub.distributedtransactionkit.core.exception.KhTransactionRuntimeException;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
@@ -33,8 +34,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import java.util.function.Supplier;
 
 public abstract class FrameworkTransaction implements KhTransaction {
 
@@ -58,32 +57,7 @@ public abstract class FrameworkTransaction implements KhTransaction {
         return innerTransaction.getContext();
     }
 
-    @Override
-    public FrameworkTransaction setCompensation(Supplier<KhTransaction> compensationSupplier) {
-        innerTransaction.setCompensation(compensationSupplier);
-        return this;
-    }
-
-    @Override
-    public FrameworkTransaction setCompensation(KhTransaction compensation) {
-        innerTransaction.setCompensation(compensation);
-        return this;
-    }
-
-    @Override
-    public FrameworkTransaction setOutbox(Supplier<KhTransaction> outboxSupplier) {
-        innerTransaction.setOutbox(outboxSupplier);
-        return this;
-    }
-
-    @Override
-    public FrameworkTransaction setOutbox(KhTransaction outbox) {
-        innerTransaction.setOutbox(outbox);
-        return this;
-    }
-
-    @Override
-    public Result<?> resolve() {
+    public Result<?> resolving() {
         PlatformTransactionManager transactionManager = ApplicationContextProvider.getApplicationContext().getBean(PlatformTransactionManager.class);
         TransactionStatus transactionStatus = null;
         try {

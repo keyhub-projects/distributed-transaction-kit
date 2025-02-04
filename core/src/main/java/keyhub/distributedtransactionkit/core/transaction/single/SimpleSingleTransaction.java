@@ -28,6 +28,8 @@ import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class SimpleSingleTransaction<T> extends AbstractSingleTransaction<T> {
@@ -55,7 +57,7 @@ public class SimpleSingleTransaction<T> extends AbstractSingleTransaction<T> {
         return new SimpleSingleTransaction<>(transactionProcess, transactionContext);
     }
 
-    public static class Result<T> implements KhTransaction.Result<T> {
+    public static class Result<T> implements SingleTransaction.Result<T> {
         T data;
 
         Result(T data) {
@@ -68,8 +70,65 @@ public class SimpleSingleTransaction<T> extends AbstractSingleTransaction<T> {
         }
 
         @Override
+        public Optional<T> optional() {
+            return Optional.ofNullable(data);
+        }
+
+        @Override
+        public List<T> list() {
+            if (data instanceof List<?> tempList) {
+                return tempList.stream()
+                        .map(element -> (T)element)
+                        .toList();
+            }
+            throw new ClassCastException(data + " Cannot cast");
+        }
+
+        @Override
         public <R> R get(Class<R> returnType) {
             return returnType.cast(data);
         }
+
+        @Override
+        public <R> Optional<R> optional(Class<R> returnType) {
+            if(data == null){
+                return Optional.empty();
+            }
+            return Optional.of(returnType.cast(data));
+        }
+
+        @Override
+        public <R> List<R> list(Class<R> returnType) {
+            if (data instanceof List<?> tempList) {
+                return tempList.stream()
+                        .map(returnType::cast)
+                        .toList();
+            }
+            throw new ClassCastException(data + " Cannot cast");
+        }
+    }
+
+    @Override
+    public SimpleSingleTransaction<T> setCompensation(Supplier<KhTransaction> compensationSupplier) {
+        KhTransaction transaction = compensationSupplier.get();
+        return setCompensation(transaction);
+    }
+
+    @Override
+    public SimpleSingleTransaction<T> setCompensation(KhTransaction compensation) {
+        this.compensation = compensation;
+        return this;
+    }
+
+    @Override
+    public SimpleSingleTransaction<T> setOutbox(Supplier<KhTransaction> outboxSupplier) {
+        KhTransaction transaction = outboxSupplier.get();
+        return setOutbox(transaction);
+    }
+
+    @Override
+    public SimpleSingleTransaction<T> setOutbox(KhTransaction outbox) {
+        this.outbox = outbox;
+        return this;
     }
 }
