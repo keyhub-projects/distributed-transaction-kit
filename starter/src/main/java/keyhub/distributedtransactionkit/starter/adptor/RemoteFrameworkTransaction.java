@@ -148,14 +148,14 @@ public class RemoteFrameworkTransaction extends SingleFrameworkTransaction<Objec
     }
 
     @Override
-    public RemoteFrameworkTransaction setOutbox(Supplier<KhTransaction> outboxSupplier) {
-        innerTransaction.setOutbox(outboxSupplier);
+    public RemoteFrameworkTransaction setCallback(Supplier<KhTransaction> callbackSupplier) {
+        innerTransaction.setCallback(callbackSupplier);
         return this;
     }
 
     @Override
-    public RemoteFrameworkTransaction setOutbox(KhTransaction outbox) {
-        innerTransaction.setOutbox(outbox);
+    public RemoteFrameworkTransaction setCallback(KhTransaction callback) {
+        innerTransaction.setCallback(callback);
         return this;
     }
 }

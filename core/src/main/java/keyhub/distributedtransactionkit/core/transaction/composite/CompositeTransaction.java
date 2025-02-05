@@ -28,7 +28,6 @@ import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
-import keyhub.distributedtransactionkit.core.transaction.remote.RemoteTransaction;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -56,8 +55,8 @@ public interface CompositeTransaction extends KhTransaction {
     CompositeTransaction setCompensation(KhTransaction compensation);
 
     @Override
-    CompositeTransaction setOutbox(Supplier<KhTransaction> outboxSupplier);
+    CompositeTransaction setCallback(Supplier<KhTransaction> callbackSupplier);
 
     @Override
-    CompositeTransaction setOutbox(KhTransaction outbox);
+    CompositeTransaction setCallback(KhTransaction callback);
 }

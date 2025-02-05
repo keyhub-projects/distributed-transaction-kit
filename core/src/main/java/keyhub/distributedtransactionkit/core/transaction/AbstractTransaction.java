@@ -30,7 +30,7 @@ public abstract class AbstractTransaction implements KhTransaction {
     protected final TransactionId transactionId;
     protected final KhTransactionContext context;
     protected KhTransaction compensation;
-    protected KhTransaction outbox;
+    protected KhTransaction callback;
 
     protected AbstractTransaction(KhTransactionContext transactionContext) {
         this.transactionId = TransactionId.ofUuid();
@@ -44,8 +44,8 @@ public abstract class AbstractTransaction implements KhTransaction {
     }
 
     protected void storeOutbox() {
-        if(outbox != null) {
-            this.context.storeOutbox(this.transactionId, this.outbox);
+        if(callback != null) {
+            this.context.storeCallback(this.transactionId, this.callback);
         }
     }
 

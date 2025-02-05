@@ -42,7 +42,7 @@ public class AfterTransactionEventHandler {
     }
 
     @EventListener
-    public void handleOutboxResolveEvent(AfterTransactionEvent event) {
+    public void handleResolveEvent(AfterTransactionEvent event) {
         KhTransaction transaction = event.transaction();
         try {
             log.info("Received resolve event: {}", transaction.getTransactionId());

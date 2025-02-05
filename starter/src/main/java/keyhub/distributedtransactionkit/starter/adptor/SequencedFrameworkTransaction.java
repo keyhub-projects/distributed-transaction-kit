@@ -75,14 +75,14 @@ public class SequencedFrameworkTransaction extends FrameworkTransaction implemen
     }
 
     @Override
-    public SequencedFrameworkTransaction setOutbox(Supplier<KhTransaction> outboxSupplier) {
-        innerTransaction.setOutbox(outboxSupplier);
+    public SequencedFrameworkTransaction setCallback(Supplier<KhTransaction> callbackSupplier) {
+        innerTransaction.setCallback(callbackSupplier);
         return this;
     }
 
     @Override
-    public SequencedFrameworkTransaction setOutbox(KhTransaction outbox) {
-        innerTransaction.setOutbox(outbox);
+    public SequencedFrameworkTransaction setCallback(KhTransaction callback) {
+        innerTransaction.setCallback(callback);
         return this;
     }
 }

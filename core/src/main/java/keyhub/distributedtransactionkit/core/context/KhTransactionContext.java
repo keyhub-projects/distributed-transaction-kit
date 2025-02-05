@@ -25,7 +25,7 @@
 package keyhub.distributedtransactionkit.core.context;
 
 import keyhub.distributedtransactionkit.core.exception.KhCompensationException;
-import keyhub.distributedtransactionkit.core.exception.KhOutboxException;
+import keyhub.distributedtransactionkit.core.exception.KhCallbackException;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 
@@ -35,11 +35,11 @@ public interface KhTransactionContext {
 
     void compensate() throws KhCompensationException;
 
-    void invokeEvent(TransactionId transactionId) throws KhOutboxException;
+    void callback(TransactionId transactionId) throws KhCallbackException;
 
-    void invokeEvent() throws KhOutboxException;
+    void callback() throws KhCallbackException;
 
     void storeCompensation(TransactionId transactionId, KhTransaction compensation);
 
-    void storeOutbox(TransactionId transactionId, KhTransaction outbox);
+    void storeCallback(TransactionId transactionId, KhTransaction callback);
 }

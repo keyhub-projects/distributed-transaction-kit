@@ -26,21 +26,21 @@ package keyhub.distributedtransactionkit.core.exception;
 
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 
-public class KhOutboxException extends Exception {
+public class KhCallbackException extends Exception {
     TransactionId transactionId;
 
-    public KhOutboxException(TransactionId transactionId) {
+    public KhCallbackException(TransactionId transactionId) {
         this.transactionId = transactionId;
     }
-    public KhOutboxException(TransactionId transactionId, String message) {
+    public KhCallbackException(TransactionId transactionId, String message) {
         super(message);
         this.transactionId = transactionId;
     }
-    public KhOutboxException(TransactionId transactionId, String message, Throwable cause) {
+    public KhCallbackException(TransactionId transactionId, String message, Throwable cause) {
         super(message, cause);
         this.transactionId = transactionId;
     }
-    public KhOutboxException(TransactionId transactionId, Throwable cause) {
+    public KhCallbackException(TransactionId transactionId, Throwable cause) {
         super(cause);
         this.transactionId = transactionId;
     }

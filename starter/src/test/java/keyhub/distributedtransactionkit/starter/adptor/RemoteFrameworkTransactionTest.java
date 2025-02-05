@@ -25,7 +25,6 @@
 package keyhub.distributedtransactionkit.starter.adptor;
 
 import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
-import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.remote.RemoteTransaction;
 import keyhub.distributedtransactionkit.core.transaction.single.SingleTransaction;
 import keyhub.distributedtransactionkit.starter.component.AfterTransactionEventHandler;
@@ -201,8 +200,8 @@ class RemoteFrameworkTransactionTest {
 
             verify(frameworkTransactionContext, times(1)).compensate();
             verify(afterTransactionEventHandler, times(1))
-                    .handleOutboxResolveEvent(any(AfterTransactionEvent.class));
-            // compensation이나 outbox에 대한 로깅을 지원하자
+                    .handleResolveEvent(any(AfterTransactionEvent.class));
+            // compensation이나 callback에 대한 로깅을 지원하자
             // logger 인터페이스 제공
             // error, warn, info, debug, trace 나눠 기록하기
             // 구현체가 없으면 안해줌
@@ -210,7 +209,7 @@ class RemoteFrameworkTransactionTest {
     }
 
     @Nested
-    class Outbox트랜잭션 {
+    class Callback트랜잭션 {
         @Autowired
         private AfterTransactionEventHandler afterTransactionEventHandler;
         @Autowired
@@ -231,22 +230,22 @@ class RemoteFrameworkTransactionTest {
         }
 
         @Test
-        void outbox트랜잭션_동작() {
-            String utdMessage = "It will outbox";
+        void callback트랜잭션_동작() {
+            String utdMessage = "It will callback";
             String utdJson = "{\"message\": \"" + utdMessage +"\"}";
-            String outboxMessage = "It's outbox!";
-            String outboxJson = "{\"message\": \"" + outboxMessage +"\"}";
+            String callbackMessage = "It's callback!";
+            String callbackJson = "{\"message\": \"" + callbackMessage +"\"}";
             mockWebServer.enqueue(new MockResponse()
                     .setBody(utdJson)
                     .addHeader("Content-Type", "application/json"));
             mockWebServer.enqueue(new MockResponse()
-                    .setBody(outboxJson)
+                    .setBody(callbackJson)
                     .addHeader("Content-Type", "application/json"));
 
             var result = RemoteFrameworkTransaction.of()
                     .get(baseUrl)
                     .header("Content-Type", "application/json")
-                    .setOutbox(RemoteFrameworkTransaction.of()
+                    .setCallback(RemoteFrameworkTransaction.of()
                         .get(baseUrl)
                         .header("Content-Type", "application/json")
                     )
@@ -256,19 +255,19 @@ class RemoteFrameworkTransactionTest {
             var result2 = result.get(Map.class);
             assertNotNull(result2);
             assertEquals(utdMessage, result2.get("message"));
-            verify(frameworkTransactionContext, times(1)).invokeEvent();
-            verify(afterTransactionEventHandler, times(1)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+            verify(frameworkTransactionContext, times(1)).callback();
+            verify(afterTransactionEventHandler, times(1)).handleResolveEvent(any(AfterTransactionEvent.class));
         }
     }
 
     @Nested
-    class Outbox트랜잭션2 {
+    class Callback트랜잭션2 {
         @Autowired
         private AfterTransactionEventHandler afterTransactionEventHandler;
         @Autowired
         private FrameworkTransactionContext frameworkTransactionContext;
         @Autowired
-        private OutboxService outboxService;
+        private CallbackService callbackService;
 
         @TestConfiguration
         static class TestConfig {
@@ -284,48 +283,48 @@ class RemoteFrameworkTransactionTest {
             }
 
             @Bean
-            public OutboxService outboxService() {
-                return new OutboxService();
+            public CallbackService callbackService() {
+                return new CallbackService();
             }
         }
 
-        public static class OutboxService {
+        public static class CallbackService {
             @Transactional
-            public RemoteTransaction.Result invokeOutboxSample(RemoteTransaction utd) throws KhTransactionException {
+            public RemoteTransaction.Result invokeCallbackSample(RemoteTransaction utd) throws KhTransactionException {
                 return utd.resolve();
             }
         }
 
         @Test
-        void 어노테이션_Transactional과_outbox트랜잭션_동작() throws KhTransactionException {
-            String utdMessage = "It will outbox";
+        void 어노테이션_Transactional과_callback트랜잭션_동작() throws KhTransactionException {
+            String utdMessage = "It will callback";
             String utdJson = "{\"message\": \"" + utdMessage +"\"}";
-            String outboxMessage = "It's outbox!";
-            String outboxJson = "{\"message\": \"" + outboxMessage +"\"}";
+            String callbackMessage = "It's callback!";
+            String callbackJson = "{\"message\": \"" + callbackMessage +"\"}";
             mockWebServer.enqueue(new MockResponse()
                     .setBody(utdJson)
                     .addHeader("Content-Type", "application/json"));
             mockWebServer.enqueue(new MockResponse()
-                    .setBody(outboxJson)
+                    .setBody(callbackJson)
                     .addHeader("Content-Type", "application/json"));
 
             RemoteTransaction utd = RemoteFrameworkTransaction.of()
                     .get(baseUrl)
                     .header("Content-Type", "application/json")
-                    .setOutbox(RemoteFrameworkTransaction.of()
+                    .setCallback(RemoteFrameworkTransaction.of()
                             .get(baseUrl)
                             .header("Content-Type", "application/json")
                     );
 
-            var result = outboxService.invokeOutboxSample(utd);
+            var result = callbackService.invokeCallbackSample(utd);
 
             assertNotNull(result);
             var result2 = result.get(Map.class);
             assertNotNull(result2);
             assertEquals(utdMessage, result2.get("message"));
-            verify(frameworkTransactionContext, times(1)).invokeEvent();
+            verify(frameworkTransactionContext, times(1)).callback();
             verify(afterTransactionEventHandler, times(1))
-                    .handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+                    .handleResolveEvent(any(AfterTransactionEvent.class));
         }
     }
 
@@ -359,7 +358,7 @@ class RemoteFrameworkTransactionTest {
 
         public static class TransactionTestService {
             @Transactional
-            public Map<String, String> invokeOutboxSample(RemoteTransaction utd) throws KhTransactionException {
+            public Map<String, String> invokeCallbackSample(RemoteTransaction utd) throws KhTransactionException {
                 return utd.resolve()
                         .get(Map.class);
             }
@@ -367,15 +366,15 @@ class RemoteFrameworkTransactionTest {
 
         @Test
         void 종합Transaction_동작() throws KhTransactionException {
-            String utdMessage = "It will outbox";
+            String utdMessage = "It will callback";
             String utdJson = "{\"message\": \"" + utdMessage +"\"}";
-            String outboxMessage = "It's outbox!";
-            String outboxJson = "{\"message\": \"" + outboxMessage +"\"}";
+            String callbackMessage = "It's callback!";
+            String callbackJson = "{\"message\": \"" + callbackMessage +"\"}";
             mockWebServer.enqueue(new MockResponse()
                     .setBody(utdJson)
                     .addHeader("Content-Type", "application/json"));
             mockWebServer.enqueue(new MockResponse()
-                    .setBody(outboxJson)
+                    .setBody(callbackJson)
                     .addHeader("Content-Type", "application/json"));
 
             RemoteTransaction utd = RemoteFrameworkTransaction.of()
@@ -384,17 +383,17 @@ class RemoteFrameworkTransactionTest {
                     .setCompensation(RemoteFrameworkTransaction.of()
                             .get(baseUrl)
                             .header("Content-Type", "application/json"))
-                    .setOutbox(RemoteFrameworkTransaction.of()
+                    .setCallback(RemoteFrameworkTransaction.of()
                             .get(baseUrl)
                             .header("Content-Type", "application/json")
                     );
-            Map<String, String> result = transactionTestService.invokeOutboxSample(utd);
+            Map<String, String> result = transactionTestService.invokeCallbackSample(utd);
             assertNotNull(result);
             assertEquals(utdMessage, result.get("message"));
 
-            verify(afterTransactionEventHandler, times(1)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+            verify(afterTransactionEventHandler, times(1)).handleResolveEvent(any(AfterTransactionEvent.class));
             verify(frameworkTransactionContext, times(0)).compensate();
-            verify(frameworkTransactionContext, times(1)).invokeEvent();
+            verify(frameworkTransactionContext, times(1)).callback();
         }
     }
 
@@ -428,7 +427,7 @@ class RemoteFrameworkTransactionTest {
 
         public static class TransactionTestService {
             @Transactional
-            public Map<String, String> invokeOutboxSample(RemoteTransaction utd) throws KhTransactionException {
+            public Map<String, String> invokeCallbackSample(RemoteTransaction utd) throws KhTransactionException {
                 var result = utd.resolve()
                         .get(Map.class);
                 invokeException();
@@ -459,16 +458,16 @@ class RemoteFrameworkTransactionTest {
                     .setCompensation(RemoteFrameworkTransaction.of()
                             .get(baseUrl)
                             .header("Content-Type", "application/json"))
-                    .setOutbox(RemoteFrameworkTransaction.of()
+                    .setCallback(RemoteFrameworkTransaction.of()
                             .get(baseUrl)
                             .header("Content-Type", "application/json")
                     );
 
-            assertThrows(RuntimeException.class, ()->transactionTestService.invokeOutboxSample(utd));
+            assertThrows(RuntimeException.class, ()->transactionTestService.invokeCallbackSample(utd));
 
-            verify(afterTransactionEventHandler, times(1)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+            verify(afterTransactionEventHandler, times(1)).handleResolveEvent(any(AfterTransactionEvent.class));
             verify(frameworkTransactionContext, times(1)).compensate();
-            verify(frameworkTransactionContext, times(0)).invokeEvent();
+            verify(frameworkTransactionContext, times(0)).callback();
         }
     }
 
@@ -502,10 +501,10 @@ class RemoteFrameworkTransactionTest {
 
         public static class TransactionTestService {
             @Transactional
-            public Map<String, String> invokeOutboxSample() throws KhTransactionException {
+            public Map<String, String> invokeCallbackSample() throws KhTransactionException {
                 Map<String, String> result = utd(baseUrl)
                         .setCompensation(utd(baseUrl))
-                        .setOutbox(utd(baseUrl))
+                        .setCallback(utd(baseUrl))
                         .resolve()
                         .get(Map.class);
                 log.info(result.toString());
@@ -521,24 +520,24 @@ class RemoteFrameworkTransactionTest {
 
         @Test
         void 종합Transaction_동작() throws KhTransactionException {
-            String utdMessage = "It will outbox";
+            String utdMessage = "It will callback";
             String utdJson = "{\"message\": \"" + utdMessage +"\"}";
-            String outboxMessage = "It's outbox!";
-            String outboxJson = "{\"message\": \"" + outboxMessage +"\"}";
+            String callbackMessage = "It's callback!";
+            String callbackJson = "{\"message\": \"" + callbackMessage +"\"}";
             mockWebServer.enqueue(new MockResponse()
                     .setBody(utdJson)
                     .addHeader("Content-Type", "application/json"));
             mockWebServer.enqueue(new MockResponse()
-                    .setBody(outboxJson)
+                    .setBody(callbackJson)
                     .addHeader("Content-Type", "application/json"));
 
-            Map<String, String> result = transactionTestService.invokeOutboxSample();
+            Map<String, String> result = transactionTestService.invokeCallbackSample();
             assertNotNull(result);
             assertEquals(utdMessage, result.get("message"));
 
-            verify(afterTransactionEventHandler, times(1)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+            verify(afterTransactionEventHandler, times(1)).handleResolveEvent(any(AfterTransactionEvent.class));
             verify(frameworkTransactionContext, times(0)).compensate();
-            verify(frameworkTransactionContext, times(1)).invokeEvent();
+            verify(frameworkTransactionContext, times(1)).callback();
         }
     }
 }
