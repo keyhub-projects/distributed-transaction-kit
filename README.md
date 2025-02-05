@@ -48,7 +48,7 @@ KhTransaction은 트랜잭션 처리 중 발생할 수 있는 다양한 상황(�
 <dependency>
     <groupId>io.github.keyhub-projects</groupId>
     <artifactId>distributed-transaction-kit-core</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
     <type>pom</type>
 </dependency>
 ```
@@ -57,7 +57,7 @@ KhTransaction은 트랜잭션 처리 중 발생할 수 있는 다양한 상황(�
 
 ```gradle
 // https://mvnrepository.com/artifact/io.github.keyhub-projects/distributed-transaction-kit-core
-implementation 'io.github.keyhub-projects:distributed-transaction-kit-core:0.0.4'
+implementation 'io.github.keyhub-projects:distributed-transaction-kit-core:0.0.5'
 ```
 
 ### 2. **트랜잭션 관리 활성화**
