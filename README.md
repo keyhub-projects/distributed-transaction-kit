@@ -213,14 +213,14 @@ RemoteTransaction utd(String baseUrl) {
 @Transactional
 public void executeCompositeTransaction() throws KhTransactionException {
     CompositeFrameworkTransaction.of(
-                    single("1"),
-                    single("I will compensate1!")
-                            .setCompensation(single("compensation1"))
-                            .setCallback(single("no callback1"))
-            )
-            .setCallback(single("no callback3"))
-            .setCompensation(single("compensation2"))
-            .resolve();
+            single("1"),
+            single("I will compensate1!")
+                .setCompensation(single("compensation1"))
+                .setCallback(single("no callback1"))
+        )
+        .setCallback(single("no callback3"))
+        .setCompensation(single("compensation2"))
+        .resolve();
 
     single("I will compensate3!")
             .setCompensation(single("compensation3"))
@@ -230,10 +230,10 @@ public void executeCompositeTransaction() throws KhTransactionException {
     
     // 아래 코드는 실행되지 않음 (예외 발생으로 인해)
     CompositeFrameworkTransaction.of(
-    single("no1"),
-    single("no2")
-                    .setCompensation(single("no compensation1"))
-                    .setCallback(single("no callback4"))
+        single("no1"),
+        single("no2")
+            .setCompensation(single("no compensation1"))
+            .setCallback(single("no callback4"))
     ).resolve();
 }
 ```
@@ -246,27 +246,27 @@ public void executeCompositeTransaction() throws KhTransactionException {
 @Transactional
 public void executeSequencedTransaction() throws KhTransactionException {
     SequencedFrameworkTransaction.of(
-                    single("1"),
-                    single("I will compensate1!")
-                            .setCompensation(single("compensation1"))
-                            .setCallback(single("no callback1"))
-            )
-            .setCallback(single("no callback3"))
-            .setCompensation(single("compensation2"))
-            .resolve();
+            single("1"),
+            single("I will compensate1!")
+                .setCompensation(single("compensation1"))
+                .setCallback(single("no callback1"))
+        )
+        .setCallback(single("no callback3"))
+        .setCompensation(single("compensation2"))
+        .resolve();
 
     single("I will compensate3!")
-            .setCompensation(single("compensation3"))
-            .resolve();
+        .setCompensation(single("compensation3"))
+        .resolve();
     
     throw new RuntimeException("SequencedTransaction failed");
 
     // 아래 코드는 실행되지 않음 (예외 발생으로 인해)
     SequencedFrameworkTransaction.of(
-    single("no1"),
-    single("no2")
-                    .setCompensation(single("no compensation1"))
-                    .setCallback(single("no callback4"))
+        single("no1"),
+        single("no2")
+            .setCompensation(single("no compensation1"))
+            .setCallback(single("no callback4"))
     ).resolve();
 }
 ```
