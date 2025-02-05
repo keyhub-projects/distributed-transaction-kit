@@ -121,14 +121,14 @@ public class SimpleSingleTransaction<T> extends AbstractSingleTransaction<T> {
     }
 
     @Override
-    public SimpleSingleTransaction<T> setOutbox(Supplier<KhTransaction> outboxSupplier) {
-        KhTransaction transaction = outboxSupplier.get();
-        return setOutbox(transaction);
+    public SimpleSingleTransaction<T> setCallback(Supplier<KhTransaction> callbackSupplier) {
+        KhTransaction transaction = callbackSupplier.get();
+        return this.setCallback(transaction);
     }
 
     @Override
-    public SimpleSingleTransaction<T> setOutbox(KhTransaction outbox) {
-        this.outbox = outbox;
+    public SimpleSingleTransaction<T> setCallback(KhTransaction callback) {
+        this.callback = callback;
         return this;
     }
 }

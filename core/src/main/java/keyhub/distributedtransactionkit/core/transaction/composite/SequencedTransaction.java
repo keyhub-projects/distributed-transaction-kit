@@ -54,8 +54,8 @@ public interface SequencedTransaction extends KhTransaction {
     SequencedTransaction setCompensation(KhTransaction compensation);
 
     @Override
-    SequencedTransaction setOutbox(Supplier<KhTransaction> outboxSupplier);
+    SequencedTransaction setCallback(Supplier<KhTransaction> callbackSupplier);
 
     @Override
-    SequencedTransaction setOutbox(KhTransaction outbox);
+    SequencedTransaction setCallback(KhTransaction callback);
 }

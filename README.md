@@ -1,6 +1,6 @@
 # KeyHub Distributed Transaction Kit
 
-KeyHub Distributed Transaction Kit (KhTransaction)은 애플리케이션 레벨에서 분산 트랜잭션을 효과적으로 처리하기 위한 프레임워크입니다. 보상 트랜잭션 및 Outbox 트랜잭션을 제공하며, 안정적이고 확장 가능한 트랜잭션 관리 기능을 지원합니다.
+KeyHub Distributed Transaction Kit (KhTransaction)은 애플리케이션 레벨에서 분산 트랜잭션을 효과적으로 처리하기 위한 프레임워크입니다. 보상 트랜잭션 및 Callback 트랜잭션을 제공하며, 안정적이고 확장 가능한 트랜잭션 관리 기능을 지원합니다.
 
 ---
 
@@ -11,9 +11,8 @@ KeyHub Distributed Transaction Kit (KhTransaction)은 애플리케이션 레벨�
 3. [빠른 시작](#빠른-시작)
 4. [트랜잭션 흐름](#트랜잭션-흐름)
 5. [트랜잭션 유형](#트랜잭션-유형)
-6. [Spring과의 통합](#spring과의-통합)
-7. [예외 처리와 제한 사항](#예외-처리와-제한-사항)
-8. [유스 케이스](#유스-케이스)
+6. [예외 처리와 제한 사항](#예외-처리와-제한-사항)
+7. [유스 케이스](#유스-케이스)
 
 ---
 
@@ -22,7 +21,7 @@ KeyHub Distributed Transaction Kit (KhTransaction)은 애플리케이션 레벨�
 KhTransaction은 트랜잭션 처리 중 발생할 수 있는 다양한 상황(성공, 실패)을 효과적으로 관리하기 위해 설계되었습니다. 이를 통해 다음을 보장합니다:
 
 - **보상 트랜잭션**: 작업 실패 시 원상 복구를 수행.
-- **Outbox 트랜잭션**: 트랜잭션 성공 이후 후속 작업 실행.
+- **Callback 트랜잭션**: 트랜잭션 성공 이후 후속 작업 실행.
 - **Spring 트랜잭션과 통합**: 기존 트랜잭션 관리와 매끄럽게 연동.
 
 ---
@@ -30,13 +29,50 @@ KhTransaction은 트랜잭션 처리 중 발생할 수 있는 다양한 상황(�
 ## 주요 기능
 
 - **보상 트랜잭션**: 트랜잭션 실패 시 실행되는 복구 작업.
-- **Outbox 트랜잭션**: 트랜잭션 성공 후 실행되는 후속 작업.
+- **Callback 트랜잭션**: 트랜잭션 성공 후 실행되는 후속 작업.
 - **트랜잭션 컨텍스트 동기화**: Spring 트랜잭션 관리와 동기화.
 - **복합 트랜잭션 지원**: 복잡한 트랜잭션 흐름을 관리할 수 있는 인터페이스 제공.
 
 ---
 
 ## 빠른 시작
+
+### 1. **의존성 추가**
+
+- [Maven Repository](https://mvnrepository.com/artifact/io.github.keyhub-projects/distributed-transaction-kit-starter)
+
+#### Maven
+
+```xml
+<!-- https://mvnrepository.com/artifact/io.github.keyhub-projects/distributed-transaction-kit-core -->
+<dependency>
+    <groupId>io.github.keyhub-projects</groupId>
+    <artifactId>distributed-transaction-kit-core</artifactId>
+    <version>0.0.4</version>
+    <type>pom</type>
+</dependency>
+```
+
+#### Gradle
+
+```gradle
+// https://mvnrepository.com/artifact/io.github.keyhub-projects/distributed-transaction-kit-core
+implementation 'io.github.keyhub-projects:distributed-transaction-kit-core:0.0.4'
+```
+
+### 2. **트랜잭션 관리 활성화**
+
+```java
+@EnableKhTransaction
+@SpringBootApplication
+public class StarterApplication {
+   public static void main(String[] args) {
+       SpringApplication.run(StarterApplication.class, args);
+   }
+}
+```
+
+### 3. 사용 예시
 
 ```java
 @Service
@@ -53,10 +89,10 @@ public class TransactionService {
                     log.info(compensationMessage);
                     return compensationMessage;
                 }))
-                .setOutbox(SingleFrameworkTransaction.of(() -> {
-                    String outboxMessage = "Outbox executed!";
-                    log.info(outboxMessage);
-                    return outboxMessage;
+                .setCallback(SingleFrameworkTransaction.of(() -> {
+                    String callbackMessage = "Callback executed!";
+                    log.info(callbackMessage);
+                    return callbackMessage;
                 }));
         return utd.resolve().get(String.class);
     }
@@ -79,16 +115,16 @@ flowchart TD
     handleByInterceptor --> compensate["Compensate"]
 ```
 
-### Outbox 트랜잭션 흐름
+### Callback 트랜잭션 흐름
 
 ```mermaid
 flowchart TD
     start([Start Transaction]) --> khTransaction["Transact KhTransaction"]
     khTransaction --> khTransactionSuccess["Success KhTransaction"]
-    khTransactionSuccess --> storeTransactionId["Store TransactionId, outbox transaction pair in stack"]
+    khTransactionSuccess --> storeTransactionId["Store TransactionId, callback transaction pair in stack"]
     storeTransactionId --> finishTransaction["Transaction Finished"]
     finishTransaction --> handleByInterceptor["Handle by Transaction Interceptor"]
-    handleByInterceptor --> invokeOutboxEventByStore["Invoke Outbox Event"]
+    handleByInterceptor --> invokeCallbackEventByStore["Invoke Callback Event"]
 ```
 
 ---
@@ -104,7 +140,7 @@ classDiagram
     class KhTransaction {
         KhTransactionId getTransactionId()
         setCompensation(KhTransaction compensation)
-        setOutbox(KhTransaction outbox)
+        setCallback(KhTransaction callback)
         Result resolve()
     }
     <<interface>> KhTransaction
@@ -180,9 +216,9 @@ public void executeCompositeTransaction() throws KhTransactionException {
                     single("1"),
                     single("I will compensate1!")
                             .setCompensation(single("compensation1"))
-                            .setOutbox(single("no outbox1"))
+                            .setCallback(single("no callback1"))
             )
-            .setOutbox(single("no outbox3"))
+            .setCallback(single("no callback3"))
             .setCompensation(single("compensation2"))
             .resolve();
 
@@ -197,7 +233,7 @@ public void executeCompositeTransaction() throws KhTransactionException {
     single("no1"),
     single("no2")
                     .setCompensation(single("no compensation1"))
-                    .setOutbox(single("no outbox4"))
+                    .setCallback(single("no callback4"))
     ).resolve();
 }
 ```
@@ -213,9 +249,9 @@ public void executeSequencedTransaction() throws KhTransactionException {
                     single("1"),
                     single("I will compensate1!")
                             .setCompensation(single("compensation1"))
-                            .setOutbox(single("no outbox1"))
+                            .setCallback(single("no callback1"))
             )
-            .setOutbox(single("no outbox3"))
+            .setCallback(single("no callback3"))
             .setCompensation(single("compensation2"))
             .resolve();
 
@@ -230,47 +266,8 @@ public void executeSequencedTransaction() throws KhTransactionException {
     single("no1"),
     single("no2")
                     .setCompensation(single("no compensation1"))
-                    .setOutbox(single("no outbox4"))
+                    .setCallback(single("no callback4"))
     ).resolve();
-}
-```
-
----
-
-## Spring과의 통합
-
-### 1. **의존성 추가**
-
-- [Maven Repository](https://mvnrepository.com/artifact/io.github.keyhub-projects/distributed-transaction-kit-starter)
-
-#### Maven
-
-```xml
-<!-- https://mvnrepository.com/artifact/io.github.keyhub-projects/distributed-transaction-kit-core -->
-<dependency>
-    <groupId>io.github.keyhub-projects</groupId>
-    <artifactId>distributed-transaction-kit-core</artifactId>
-    <version>0.0.4</version>
-    <type>pom</type>
-</dependency>
-```
-
-#### Gradle
-
-```gradle
-// https://mvnrepository.com/artifact/io.github.keyhub-projects/distributed-transaction-kit-core
-implementation 'io.github.keyhub-projects:distributed-transaction-kit-core:0.0.4'
-```
-
-### 2. **트랜잭션 관리 설정**
-
-```java
-@EnableKhTransaction
-@SpringBootApplication
-public class StarterApplication {
-   public static void main(String[] args) {
-       SpringApplication.run(StarterApplication.class, args);
-   }
 }
 ```
 
@@ -281,8 +278,8 @@ public class StarterApplication {
 1. **보상 트랜잭션 실행 실패**
   - 보상 트랜잭션이 실패하면 로그를 남기고 해당 상태를 별도로 관리해야 합니다.
 
-2. **Outbox 트랜잭션 실행 중 오류**
-  - Outbox 작업이 실패하면 재시도 로직을 구현하거나 별도의 큐를 활용해야 합니다.
+2. **Callback 트랜잭션 실행 중 오류**
+  - Callback 작업이 실패하면 재시도 로직을 구현하거나 별도의 큐를 활용해야 합니다.
 
 ---
 
@@ -306,7 +303,7 @@ classDiagram
     class KhTransaction {
         KhTransactionId getTransactionId()
         setCompensation(KhTransaction compensation)
-        setOutbox(KhTransaction outbox)
+        setCallback(KhTransaction callback)
         Result resolve()
     }
     <<interface>> KhTransaction
@@ -315,7 +312,7 @@ classDiagram
         KhTransactionId transactionId
         KhTransactionContext transactionContext
         KhTransaction compensation
-        KhTransaction outbox
+        KhTransaction callback
     }
     <<abstract>> AbstractTransaction
     KhTransaction <|.. AbstractTransaction
@@ -436,14 +433,14 @@ classDiagram
     CompensationStore <|.. SimpleCompensationStore
     AbstractTransactionContext *-- CompensationStore
     
-    class OutboxStore {
+    class CallbackStore {
     }
-    <<interface>> OutboxStore
+    <<interface>> CallbackStore
     
-    class SimpleOutboxStore {
+    class SimpleCallbackStore {
     }
-    OutboxStore <|.. SimpleOutboxStore
-    AbstractTransactionContext *-- OutboxStore
+    CallbackStore <|.. SimpleCallbackStore
+    AbstractTransactionContext *-- CallbackStore
     
     class WriteAheadLogger {
     }

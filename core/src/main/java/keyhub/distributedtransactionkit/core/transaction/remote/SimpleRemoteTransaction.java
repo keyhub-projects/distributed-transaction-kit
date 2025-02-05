@@ -228,14 +228,14 @@ public class SimpleRemoteTransaction extends AbstractRemoteTransaction {
     }
 
     @Override
-    public SimpleRemoteTransaction setOutbox(Supplier<KhTransaction> outboxSupplier) {
-        KhTransaction transaction = outboxSupplier.get();
-        return setOutbox(transaction);
+    public SimpleRemoteTransaction setCallback(Supplier<KhTransaction> callbackSupplier) {
+        KhTransaction transaction = callbackSupplier.get();
+        return setCallback(transaction);
     }
 
     @Override
-    public SimpleRemoteTransaction setOutbox(KhTransaction outbox) {
-        this.outbox = outbox;
+    public SimpleRemoteTransaction setCallback(KhTransaction callback) {
+        this.callback = callback;
         return this;
     }
 }

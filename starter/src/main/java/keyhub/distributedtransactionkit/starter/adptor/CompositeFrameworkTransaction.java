@@ -75,14 +75,14 @@ public class CompositeFrameworkTransaction extends FrameworkTransaction implemen
     }
 
     @Override
-    public CompositeFrameworkTransaction setOutbox(Supplier<KhTransaction> outboxSupplier) {
-        innerTransaction.setOutbox(outboxSupplier);
+    public CompositeFrameworkTransaction setCallback(Supplier<KhTransaction> callbackSupplier) {
+        innerTransaction.setCallback(callbackSupplier);
         return this;
     }
 
     @Override
-    public CompositeFrameworkTransaction setOutbox(KhTransaction outbox) {
-        innerTransaction.setOutbox(outbox);
+    public CompositeFrameworkTransaction setCallback(KhTransaction callback) {
+        innerTransaction.setCallback(callback);
         return this;
     }
 }

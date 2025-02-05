@@ -36,9 +36,9 @@ public interface KhTransaction {
 
     KhTransaction setCompensation(KhTransaction compensation);
 
-    KhTransaction setOutbox(Supplier<KhTransaction> outboxSupplier);
+    KhTransaction setCallback(Supplier<KhTransaction> callbackSupplier);
 
-    KhTransaction setOutbox(KhTransaction outbox);
+    KhTransaction setCallback(KhTransaction callback);
 
     KhTransactionContext getContext();
 

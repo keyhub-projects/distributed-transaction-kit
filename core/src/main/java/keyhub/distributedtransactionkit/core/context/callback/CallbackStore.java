@@ -22,48 +22,22 @@
  * SOFTWARE.
  */
 
-package keyhub.distributedtransactionkit.core.context.outbox;
+package keyhub.distributedtransactionkit.core.context.callback;
 
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class SimpleOutboxStore implements OutboxStore {
+public interface CallbackStore {
 
-    private final Queue<TransactionId> transactionIdQueue = new ConcurrentLinkedQueue<>();
-    private final Map<TransactionId, KhTransaction> outboxes;
-
-    SimpleOutboxStore(Map<TransactionId, KhTransaction> outboxes) {
-        this.outboxes = outboxes;
+    static CallbackStore of() {
+        return SimpleCallbackStore.of();
     }
 
-    static SimpleOutboxStore of(){
-        return new SimpleOutboxStore(
-                new ConcurrentHashMap<>()
-        );
-    }
+    void add(TransactionId transactionId, KhTransaction callback);
 
-    @Override
-    public void add(TransactionId transactionId, KhTransaction outbox) {
-        transactionIdQueue.add(transactionId);
-        outboxes.put(transactionId, outbox);
-    }
+    KhTransaction poll(TransactionId transactionId);
 
-    @Override
-    public KhTransaction poll(TransactionId transactionId) {
-        transactionIdQueue.remove(transactionId);
-        return outboxes.remove(transactionId);
-    }
-
-    @Override
-    public List<KhTransaction> pollAll() {
-        return transactionIdQueue.stream()
-                .map(this::poll)
-                .toList();
-    }
+    List<KhTransaction> pollAll();
 }

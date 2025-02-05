@@ -54,14 +54,14 @@ public class SingleFrameworkTransaction<T> extends FrameworkTransaction implemen
     }
 
     @Override
-    public SingleFrameworkTransaction<T> setOutbox(Supplier<KhTransaction> outboxSupplier) {
-        innerTransaction.setOutbox(outboxSupplier);
+    public SingleFrameworkTransaction<T> setCallback(Supplier<KhTransaction> callbackSupplier) {
+        innerTransaction.setCallback(callbackSupplier);
         return this;
     }
 
     @Override
-    public SingleFrameworkTransaction<T> setOutbox(KhTransaction outbox) {
-        innerTransaction.setOutbox(outbox);
+    public SingleFrameworkTransaction<T> setCallback(KhTransaction callback) {
+        innerTransaction.setCallback(callback);
         return this;
     }
 

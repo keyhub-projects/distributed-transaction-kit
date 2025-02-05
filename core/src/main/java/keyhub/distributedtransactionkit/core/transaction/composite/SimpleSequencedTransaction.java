@@ -101,14 +101,14 @@ public class SimpleSequencedTransaction extends AbstractCompositeTransaction imp
     }
 
     @Override
-    public SimpleSequencedTransaction setOutbox(Supplier<KhTransaction> outboxSupplier) {
-        KhTransaction transaction = outboxSupplier.get();
-        return setOutbox(transaction);
+    public SimpleSequencedTransaction setCallback(Supplier<KhTransaction> callbackSupplier) {
+        KhTransaction transaction = callbackSupplier.get();
+        return this.setCallback(transaction);
     }
 
     @Override
-    public SimpleSequencedTransaction setOutbox(KhTransaction outbox) {
-        this.outbox = outbox;
+    public SimpleSequencedTransaction setCallback(KhTransaction callback) {
+        this.callback = callback;
         return this;
     }
 }

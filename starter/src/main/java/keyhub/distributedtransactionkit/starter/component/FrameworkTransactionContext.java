@@ -65,7 +65,7 @@ public class FrameworkTransactionContext extends AbstractTransactionContext impl
                 TransactionSynchronizationManager.clear();
             }
             switch (status) {
-                case STATUS_COMMITTED -> invokeEvent();
+                case STATUS_COMMITTED -> callback();
                 case STATUS_ROLLED_BACK -> compensate();
             }
         } catch (Exception exception) {
@@ -76,7 +76,7 @@ public class FrameworkTransactionContext extends AbstractTransactionContext impl
     @Override
     public void compensate(TransactionId transactionId) {
         KhTransaction compensation = compensationStore.pop(transactionId);
-        outboxStore.poll(transactionId);
+        callbackStore.poll(transactionId);
         if(compensation == null) {
             return;
         }
@@ -86,15 +86,15 @@ public class FrameworkTransactionContext extends AbstractTransactionContext impl
     }
 
     @Override
-    public void invokeEvent(TransactionId transactionId) {
-        KhTransaction outbox = outboxStore.poll(transactionId);
+    public void callback(TransactionId transactionId) {
+        KhTransaction callback = callbackStore.poll(transactionId);
         compensationStore.pop(transactionId);
-        if(outbox == null) {
+        if(callback == null) {
             return;
         }
         log.debug("invoke AfterTransactionEvent - Outbox {} for {}",
-                outbox.getTransactionId(), transactionId);
-        invokeAfterTransactionEvent(outbox);
+                callback.getTransactionId(), transactionId);
+        invokeAfterTransactionEvent(callback);
     }
 
     @Override
@@ -109,13 +109,13 @@ public class FrameworkTransactionContext extends AbstractTransactionContext impl
     }
 
     @Override
-    public void invokeEvent() {
-        List<KhTransaction> outboxes = outboxStore.pollAll();
-        if(outboxes.isEmpty()) {
+    public void callback() {
+        List<KhTransaction> callback = callbackStore.pollAll();
+        if(callback.isEmpty()) {
             return;
         }
         log.debug("invoke AfterTransactionEvent - Outboxes {}",
-                outboxes.stream().map(KhTransaction::getTransactionId).toList());
-        outboxes.forEach(this::invokeAfterTransactionEvent);
+                callback.stream().map(KhTransaction::getTransactionId).toList());
+        callback.forEach(this::invokeAfterTransactionEvent);
     }
 }

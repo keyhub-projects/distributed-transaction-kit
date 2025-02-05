@@ -25,17 +25,17 @@
 package keyhub.distributedtransactionkit.core.context;
 
 import keyhub.distributedtransactionkit.core.context.compensation.CompensationStore;
-import keyhub.distributedtransactionkit.core.context.outbox.OutboxStore;
+import keyhub.distributedtransactionkit.core.context.callback.CallbackStore;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.TransactionId;
 
 public abstract class AbstractTransactionContext implements KhTransactionContext {
     protected final CompensationStore compensationStore;
-    protected final OutboxStore outboxStore;
+    protected final CallbackStore callbackStore;
 
     public AbstractTransactionContext() {
         this.compensationStore = CompensationStore.of();
-        this.outboxStore = OutboxStore.of();
+        this.callbackStore = CallbackStore.of();
     }
 
     @Override
@@ -44,7 +44,7 @@ public abstract class AbstractTransactionContext implements KhTransactionContext
     }
 
     @Override
-    public void storeOutbox(TransactionId transactionId, KhTransaction outbox) {
-        this.outboxStore.add(transactionId, outbox);
+    public void storeCallback(TransactionId transactionId, KhTransaction callback) {
+        this.callbackStore.add(transactionId, callback);
     }
 }

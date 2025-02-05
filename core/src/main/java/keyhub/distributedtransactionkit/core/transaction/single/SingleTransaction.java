@@ -27,7 +27,6 @@ package keyhub.distributedtransactionkit.core.transaction.single;
 import keyhub.distributedtransactionkit.core.context.KhTransactionContext;
 import keyhub.distributedtransactionkit.core.exception.KhTransactionException;
 import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
-import keyhub.distributedtransactionkit.core.transaction.remote.RemoteTransaction;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,8 +57,8 @@ public interface SingleTransaction<T> extends KhTransaction {
     SingleTransaction<T> setCompensation(KhTransaction compensation);
 
     @Override
-    SingleTransaction<T> setOutbox(Supplier<KhTransaction> outboxSupplier);
+    SingleTransaction<T> setCallback(Supplier<KhTransaction> callbackSupplier);
 
     @Override
-    SingleTransaction<T> setOutbox(KhTransaction outbox);
+    SingleTransaction<T> setCallback(KhTransaction callback);
 }

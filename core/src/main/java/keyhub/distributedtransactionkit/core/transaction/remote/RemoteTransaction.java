@@ -31,9 +31,7 @@ import keyhub.distributedtransactionkit.core.transaction.KhTransaction;
 import keyhub.distributedtransactionkit.core.transaction.single.SingleTransaction;
 import org.springframework.http.HttpMethod;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 public interface RemoteTransaction extends SingleTransaction<Object> {
@@ -85,8 +83,8 @@ public interface RemoteTransaction extends SingleTransaction<Object> {
     RemoteTransaction setCompensation(KhTransaction compensation);
 
     @Override
-    RemoteTransaction setOutbox(Supplier<KhTransaction> outboxSupplier);
+    RemoteTransaction setCallback(Supplier<KhTransaction> callbackSupplier);
 
     @Override
-    RemoteTransaction setOutbox(KhTransaction outbox);
+    RemoteTransaction setCallback(KhTransaction callback);
 }

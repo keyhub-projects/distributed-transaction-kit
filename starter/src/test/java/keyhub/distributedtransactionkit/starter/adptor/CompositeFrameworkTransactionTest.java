@@ -78,13 +78,13 @@ class CompositeFrameworkTransactionTest {
     }
 
     @Nested
-    class Composite_outbox사례{
+    class Composite_callback사례{
         @Autowired
         private AfterTransactionEventHandler afterTransactionEventHandler;
         @Autowired
         private FrameworkTransactionContext frameworkTransactionContext;
         @Autowired
-        private OutboxService outboxService;
+        private CallbackService callbackService;
 
         @TestConfiguration
         static class TestConfig {
@@ -100,23 +100,23 @@ class CompositeFrameworkTransactionTest {
             }
 
             @Bean
-            public OutboxService outboxService() {
-                return new OutboxService();
+            public CallbackService callbackService() {
+                return new CallbackService();
             }
         }
 
-        public static class OutboxService {
+        public static class CallbackService {
             @Transactional
-            public Map<TransactionId, KhTransaction.Result<?>> outboxSample() {
+            public Map<TransactionId, KhTransaction.Result<?>> callbackSample() {
                 CompositeTransaction.Result result = CompositeFrameworkTransaction.of(
                         single("1"), single("2"),
-                        single("I will invoke outbox1!").setOutbox(single("outbox1")),
-                        single("I will invoke outbox2!").setOutbox(single("outbox2"))
+                        single("I will invoke callback1!").setCallback(single("callback1")),
+                        single("I will invoke callback2!").setCallback(single("callback2"))
                 ).resolve();
                 CompositeFrameworkTransaction.of(
                         single("5"), single("6"),
-                        single("I will invoke outbox3!").setOutbox(single("outbox3")),
-                        single("I will invoke outbox4!").setOutbox(single("outbox4")),
+                        single("I will invoke callback3!").setCallback(single("callback3")),
+                        single("I will invoke callback4!").setCallback(single("callback4")),
                         single("7"), single("8")
                 ).resolve();
                 return result.get();
@@ -131,15 +131,15 @@ class CompositeFrameworkTransactionTest {
         }
 
         @Test
-        void outbox_트랜잭션_동작() {
-            var result = outboxService.outboxSample();
+        void callback_트랜잭션_동작() {
+            var result = callbackService.callbackSample();
 
             assertNotNull(result);
             assertEquals(4, result.size());
             log.info(result.toString());
             verify(frameworkTransactionContext, times(0)).compensate();
-            verify(frameworkTransactionContext, times(1)).invokeEvent();
-            verify(afterTransactionEventHandler, times(4)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+            verify(frameworkTransactionContext, times(1)).callback();
+            verify(afterTransactionEventHandler, times(4)).handleResolveEvent(any(AfterTransactionEvent.class));
         }
     }
 
@@ -177,16 +177,16 @@ class CompositeFrameworkTransactionTest {
                 var failTransaction = failSingle("I will be fail!");
                 CompositeFrameworkTransaction.of(
                         single("1"), single("2"),
-                        single("I will compensate1!").setCompensation(single("compensation1")).setOutbox(single("no outbox1")),
+                        single("I will compensate1!").setCompensation(single("compensation1")).setCallback(single("no callback1")),
                         single("3"),
-                        single("4").setOutbox(single("no outbox2")),
+                        single("4").setCallback(single("no callback2")),
                         single("I will compensate2!").setCompensation(single("compensation2"))
                 ).resolve();
                 single("I will compensate3!").setCompensation(single("compensation3")).resolve();
                 failTransaction.resolve();
                 CompositeFrameworkTransaction.of(
                         single("no1"), single("no2"),
-                        single("no3").setCompensation(single("no compensation1")).setOutbox(single("no outbox1"))
+                        single("no3").setCompensation(single("no compensation1")).setCallback(single("no callback1"))
                 ).resolve();
             }
         }
@@ -210,8 +210,8 @@ class CompositeFrameworkTransactionTest {
             assertThrows(KhTransactionRuntimeException.class, ()-> compensationService.compensateSample());
 
             verify(frameworkTransactionContext, times(1)).compensate();
-            verify(frameworkTransactionContext, times(0)).invokeEvent();
-            verify(afterTransactionEventHandler, times(3)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+            verify(frameworkTransactionContext, times(0)).callback();
+            verify(afterTransactionEventHandler, times(3)).handleResolveEvent(any(AfterTransactionEvent.class));
         }
     }
 }

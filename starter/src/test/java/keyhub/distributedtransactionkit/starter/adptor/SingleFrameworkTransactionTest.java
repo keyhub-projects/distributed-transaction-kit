@@ -154,12 +154,12 @@ class SingleFrameworkTransactionTest {
             assertThrows(RuntimeException.class, () -> compensationService.compensateSample(utd));
 
             verify(frameworkTransactionContext, times(1)).compensate();
-            verify(afterTransactionEventHandler, times(1)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+            verify(afterTransactionEventHandler, times(1)).handleResolveEvent(any(AfterTransactionEvent.class));
         }
     }
 
     @Nested
-    class Outbox트랜잭션 {
+    class Callback트랜잭션 {
         @Autowired
         private AfterTransactionEventHandler afterTransactionEventHandler;
         @Autowired
@@ -180,17 +180,17 @@ class SingleFrameworkTransactionTest {
         }
 
         @Test
-        void outbox트랜잭션_동작() throws KhTransactionException {
+        void callback트랜잭션_동작() throws KhTransactionException {
             String sample = "Hello World!";
-            String outboxMessage = "It's outbox!";
+            String callbackMessage = "It's callback!";
 
             SingleTransaction<String> utd = SingleFrameworkTransaction.of(()->{
                         log.info(sample);
                         return sample;
                     })
-                    .setOutbox(SingleFrameworkTransaction.of(() -> {
-                        log.info(outboxMessage);
-                        return outboxMessage;
+                    .setCallback(SingleFrameworkTransaction.of(() -> {
+                        log.info(callbackMessage);
+                        return callbackMessage;
                     }));
 
             var result = utd.resolve();
@@ -199,19 +199,19 @@ class SingleFrameworkTransactionTest {
             assertNotNull(result2);
             assertEquals(sample, result2);
 
-            verify(frameworkTransactionContext, times(1)).invokeEvent();
-            verify(afterTransactionEventHandler, times(1)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+            verify(frameworkTransactionContext, times(1)).callback();
+            verify(afterTransactionEventHandler, times(1)).handleResolveEvent(any(AfterTransactionEvent.class));
         }
     }
 
     @Nested
-    class Outbox트랜잭션2 {
+    class Callback트랜잭션2 {
         @Autowired
         private AfterTransactionEventHandler afterTransactionEventHandler;
         @Autowired
         private FrameworkTransactionContext frameworkTransactionContext;
         @Autowired
-        private OutboxService outboxService;
+        private CallbackService callbackService;
 
         @TestConfiguration
         static class TestConfig {
@@ -227,40 +227,40 @@ class SingleFrameworkTransactionTest {
             }
 
             @Bean
-            public OutboxService outboxService() {
-                return new OutboxService();
+            public CallbackService callbackService() {
+                return new CallbackService();
             }
         }
 
-        public static class OutboxService {
+        public static class CallbackService {
             @Transactional
-            public <T> KhTransaction.Result<T> invokeOutboxSample(SingleTransaction<T> utd) throws KhTransactionException {
+            public <T> KhTransaction.Result<T> invokeCallbackSample(SingleTransaction<T> utd) throws KhTransactionException {
                 return utd.resolve();
             }
         }
 
         @Test
-        void 어노테이션_Transactional과_outbox트랜잭션_동작() throws KhTransactionException {
+        void 어노테이션_Transactional과_callback트랜잭션_동작() throws KhTransactionException {
             String sample = "Hello World!";
-            String outboxMessage = "It's outbox!";
+            String callbackMessage = "It's callback!";
 
             SingleTransaction<String> utd = SingleFrameworkTransaction.of(()->{
                         log.info(sample);
                         return sample;
                     })
-                    .setOutbox(SingleFrameworkTransaction.of(() -> {
-                        log.info(outboxMessage);
-                        return outboxMessage;
+                    .setCallback(SingleFrameworkTransaction.of(() -> {
+                        log.info(callbackMessage);
+                        return callbackMessage;
                     }));
 
-            var result = outboxService.invokeOutboxSample(utd);
+            var result = callbackService.invokeCallbackSample(utd);
             assertNotNull(result);
             var result2 = result.get();
             assertNotNull(result2);
             assertEquals(sample, result2);
 
-            verify(frameworkTransactionContext, times(1)).invokeEvent();
-            verify(afterTransactionEventHandler, times(1)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+            verify(frameworkTransactionContext, times(1)).callback();
+            verify(afterTransactionEventHandler, times(1)).handleResolveEvent(any(AfterTransactionEvent.class));
         }
     }
 
@@ -294,7 +294,7 @@ class SingleFrameworkTransactionTest {
 
         public static class TransactionTestService {
             @Transactional
-            public String invokeOutboxSample() throws KhTransactionException {
+            public String invokeCallbackSample() throws KhTransactionException {
                 SingleTransaction<String> utd = SingleFrameworkTransaction.of(()->{
                             String sample = "Hello World!";
                             log.info(sample);
@@ -305,10 +305,10 @@ class SingleFrameworkTransactionTest {
                             log.info(compensationMessage);
                             return compensationMessage;
                         }))
-                        .setOutbox(SingleFrameworkTransaction.of(() -> {
-                            String outboxMessage = "It's outbox!";
-                            log.info(outboxMessage);
-                            return outboxMessage;
+                        .setCallback(SingleFrameworkTransaction.of(() -> {
+                            String callbackMessage = "It's callback!";
+                            log.info(callbackMessage);
+                            return callbackMessage;
                         }));
                 return utd.resolve()
                         .get(String.class);
@@ -317,13 +317,13 @@ class SingleFrameworkTransactionTest {
 
         @Test
         void 종합Transaction_동작() throws KhTransactionException {
-            var result = transactionTestService.invokeOutboxSample();
+            var result = transactionTestService.invokeCallbackSample();
             assertNotNull(result);
             assertEquals("Hello World!", result);
 
-            verify(afterTransactionEventHandler, times(1)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+            verify(afterTransactionEventHandler, times(1)).handleResolveEvent(any(AfterTransactionEvent.class));
             verify(frameworkTransactionContext, times(0)).compensate();
-            verify(frameworkTransactionContext, times(1)).invokeEvent();
+            verify(frameworkTransactionContext, times(1)).callback();
         }
     }
 
@@ -357,7 +357,7 @@ class SingleFrameworkTransactionTest {
 
         public static class TransactionTestService {
             @Transactional
-            public String invokeOutboxSample() throws KhTransactionException {
+            public String invokeCallbackSample() throws KhTransactionException {
                 SingleTransaction<String> utd = SingleFrameworkTransaction.of(()->{
                             String sample = "Hello World!";
                             log.info(sample);
@@ -368,10 +368,10 @@ class SingleFrameworkTransactionTest {
                             log.info(compensationMessage);
                             return compensationMessage;
                         }))
-                        .setOutbox(SingleFrameworkTransaction.of(() -> {
-                            String outboxMessage = "It's outbox!";
-                            log.info(outboxMessage);
-                            return outboxMessage;
+                        .setCallback(SingleFrameworkTransaction.of(() -> {
+                            String callbackMessage = "It's callback!";
+                            log.info(callbackMessage);
+                            return callbackMessage;
                         }));
                 var result = utd.resolve()
                         .get(String.class);
@@ -386,11 +386,11 @@ class SingleFrameworkTransactionTest {
 
         @Test
         void 종합Transaction_동작() {
-            assertThrows(RuntimeException.class, ()->transactionTestService.invokeOutboxSample());
+            assertThrows(RuntimeException.class, ()->transactionTestService.invokeCallbackSample());
 
-            verify(afterTransactionEventHandler, times(1)).handleOutboxResolveEvent(any(AfterTransactionEvent.class));
+            verify(afterTransactionEventHandler, times(1)).handleResolveEvent(any(AfterTransactionEvent.class));
             verify(frameworkTransactionContext, times(1)).compensate();
-            verify(frameworkTransactionContext, times(0)).invokeEvent();
+            verify(frameworkTransactionContext, times(0)).callback();
         }
     }
 }
