@@ -236,11 +236,11 @@ public void executeCompositeTransaction() throws KhTransactionException {
 
     // The following code will not execute (due to exception)
     CompositeFrameworkTransaction.of(
-        single("no1"),
-        single("no2")
-            .setCompensation(single("no compensation1"))
-            .setCallback(single("no callback4"))
-    ).resolve();
+           single("no1"),
+           single("no2")
+               .setCompensation(single("no compensation1"))
+               .setCallback(single("no callback4"))
+       ).resolve();
 }
 ```
 
@@ -269,11 +269,11 @@ public void executeSequencedTransaction() throws KhTransactionException {
 
     // The following code will not execute (due to exception)
     SequencedFrameworkTransaction.of(
-        single("no1"),
-        single("no2")
-            .setCompensation(single("no compensation1"))
-            .setCallback(single("no callback4"))
-    ).resolve();
+           single("no1"),
+           single("no2")
+               .setCompensation(single("no compensation1"))
+               .setCallback(single("no callback4"))
+       ).resolve();
 }
 ```
 
