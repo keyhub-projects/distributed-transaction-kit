@@ -86,7 +86,7 @@ public class StarterApplication {
 public class TransactionService {
     @Transactional
     public String transactSample() {
-        FrameworkTransaction utd = SingleFrameworkTransaction.of(() -> {
+        SingleTransaction utd = SingleFrameworkTransaction.of(() -> {
                     String sample = "Hello, Transaction!";
                     log.info(sample);
                     return sample;
@@ -237,11 +237,11 @@ public void executeCompositeTransaction() throws KhTransactionException {
     
     // 아래 코드는 실행되지 않음 (예외 발생으로 인해)
     CompositeFrameworkTransaction.of(
-        single("no1"),
-        single("no2")
-            .setCompensation(single("no compensation1"))
-            .setCallback(single("no callback4"))
-    ).resolve();
+            single("no1"),
+            single("no2")
+                .setCompensation(single("no compensation1"))
+                .setCallback(single("no callback4"))
+        ).resolve();
 }
 ```
 
@@ -270,11 +270,11 @@ public void executeSequencedTransaction() throws KhTransactionException {
 
     // 아래 코드는 실행되지 않음 (예외 발생으로 인해)
     SequencedFrameworkTransaction.of(
-        single("no1"),
-        single("no2")
-            .setCompensation(single("no compensation1"))
-            .setCallback(single("no callback4"))
-    ).resolve();
+            single("no1"),
+            single("no2")
+                .setCompensation(single("no compensation1"))
+                .setCallback(single("no callback4"))
+        ).resolve();
 }
 ```
 
