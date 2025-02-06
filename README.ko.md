@@ -86,7 +86,7 @@ public class StarterApplication {
 public class TransactionService {
     @Transactional
     public String transactSample() {
-        FrameworkTransaction utd = SingleFrameworkTransaction.of(() -> {
+        SingleTransaction utd = SingleFrameworkTransaction.of(() -> {
                     String sample = "Hello, Transaction!";
                     log.info(sample);
                     return sample;
