@@ -1,50 +1,50 @@
 # KeyHub Distributed Transaction Kit
 
-The **KeyHub Distributed Transaction Kit (KhTransaction)** is a framework designed to efficiently handle **distributed transactions at the application level**. It provides **compensating transactions** and **callback transactions**, ensuring reliable and scalable transaction management.
+KeyHub Distributed Transaction Kit (KhTransaction)은 애플리케이션 레벨에서 분산 트랜잭션을 효과적으로 처리하기 위한 프레임워크입니다. 보상 트랜잭션 및 Callback 트랜잭션을 제공하며, 안정적이고 확장 가능한 트랜잭션 관리 기능을 지원합니다.
 
 <details>
-  <summary>Choose Language</summary>
+  <summary>언어 선택</summary>
 
-- [🇬🇧 English (README.md)](README.md)
-- [🇰🇷 한국어 (README.ko.md)](README.ko.md)
+- [🇬🇧 English (README.md)](./README.md)
+- [🇰🇷 한국어 (README.ko.md)](./README.ko.md)
 </details>
 
 ---
 
-## 📚 Table of Contents
+## 📚 목차
 
-1. [Project Overview](#project-overview)
-2. [Key Features](#key-features)
-3. [Quick Start](#quick-start)
-4. [Transaction Flow](#transaction-flow)
-5. [Transaction Types](#transaction-types)
-6. [Exception Handling & Limitations](#exception-handling--limitations)
-7. [Use Cases](#use-cases)
-
----
-
-## Project Overview
-
-**KhTransaction** is designed to effectively handle various scenarios (success and failure) that may occur during transaction processing. It guarantees the following:
-
-- **Compensating Transactions**: Rollback operations when a transaction fails.
-- **Callback Transactions**: Executes follow-up actions after a successful transaction.
-- **Seamless Integration with Spring Transactions**: Smoothly integrates with existing transaction management.
+1. [프로젝트 소개](#프로젝트-소개)
+2. [주요 기능](#주요-기능)
+3. [빠른 시작](#빠른-시작)
+4. [트랜잭션 흐름](#트랜잭션-흐름)
+5. [트랜잭션 유형](#트랜잭션-유형)
+6. [예외 처리와 제한 사항](#예외-처리와-제한-사항)
+7. [유스 케이스](#유스-케이스)
 
 ---
 
-## Key Features
+## 프로젝트 소개
 
-- **Compensating Transactions**: Recovery operations executed when a transaction fails.
-- **Callback Transactions**: Post-processing operations executed after a successful transaction.
-- **Transaction Context Synchronization**: Synchronizes with Spring transaction management.
-- **Complex Transaction Support**: Provides interfaces for managing complex transaction flows.
+KhTransaction은 트랜잭션 처리 중 발생할 수 있는 다양한 상황(성공, 실패)을 효과적으로 관리하기 위해 설계되었습니다. 이를 통해 다음을 보장합니다:
+
+- **보상 트랜잭션**: 작업 실패 시 원상 복구를 수행.
+- **Callback 트랜잭션**: 트랜잭션 성공 이후 후속 작업 실행.
+- **Spring 트랜잭션과 통합**: 기존 트랜잭션 관리와 매끄럽게 연동.
 
 ---
 
-## Quick Start
+## 주요 기능
 
-### 1. **Add Dependencies**
+- **보상 트랜잭션**: 트랜잭션 실패 시 실행되는 복구 작업.
+- **Callback 트랜잭션**: 트랜잭션 성공 후 실행되는 후속 작업.
+- **트랜잭션 컨텍스트 동기화**: Spring 트랜잭션 관리와 동기화.
+- **복합 트랜잭션 지원**: 복잡한 트랜잭션 흐름을 관리할 수 있는 인터페이스 제공.
+
+---
+
+## 빠른 시작
+
+### 1. **의존성 추가**
 
 - [Maven Repository](https://mvnrepository.com/artifact/io.github.keyhub-projects/distributed-transaction-kit-starter)
 
@@ -67,7 +67,7 @@ The **KeyHub Distributed Transaction Kit (KhTransaction)** is a framework design
 implementation 'io.github.keyhub-projects:distributed-transaction-kit-core:0.0.5'
 ```
 
-### 2. **Enable Transaction Management**
+### 2. **트랜잭션 관리 활성화**
 
 ```java
 @EnableKhTransaction
@@ -79,7 +79,7 @@ public class StarterApplication {
 }
 ```
 
-### 3. **Usage Example**
+### 3. 사용 예시
 
 ```java
 @Service
@@ -108,9 +108,9 @@ public class TransactionService {
 
 ---
 
-## Transaction Flow
+## 트랜잭션 흐름
 
-### Compensating Transaction Flow
+### 보상 트랜잭션 흐름
 
 ```mermaid
 flowchart TD
@@ -122,7 +122,7 @@ flowchart TD
     handleByInterceptor --> compensate["Compensate"]
 ```
 
-### Callback Transaction Flow
+### Callback 트랜잭션 흐름
 
 ```mermaid
 flowchart TD
@@ -136,7 +136,8 @@ flowchart TD
 
 ---
 
-## Transaction Types
+## 트랜잭션 유형
+
 
 ```mermaid
 ---
@@ -181,12 +182,12 @@ classDiagram
 
 ### 1. **KhTransaction**
 
-- The base interface for all transactions.
+- 모든 트랜잭션의 부모 인터페이스.
 
 ### 2. **SingleTransaction**
 
-- A single transaction interface.
-- Integrated with Spring transactions.
+- 단일 트랜잭션 인터페이스.
+- Spring 트랜잭션과 통합.
 
 ```java
 SingleTransaction utd() {
@@ -200,7 +201,7 @@ SingleTransaction utd() {
 
 ### 3. **RemoteTransaction**
 
-- A transaction integrated with REST API requests.
+- REST API 요청과 통합된 트랜잭션.
 
 ```java
 RemoteTransaction utd(String baseUrl) {
@@ -212,8 +213,8 @@ RemoteTransaction utd(String baseUrl) {
 
 ### 4. **CompositeTransaction**
 
-- Manages multiple transactions as a group.
-- Does not guarantee execution order.
+- 여러 트랜잭션을 묶어 관리.
+- 실행 순서를 보장하지 않음.
 
 ```java
 @Transactional
@@ -233,8 +234,8 @@ public void executeCompositeTransaction() throws KhTransactionException {
             .resolve();
 
     throw new RuntimeException("CompositeTransaction failed");
-
-    // The following code will not execute (due to exception)
+    
+    // 아래 코드는 실행되지 않음 (예외 발생으로 인해)
     CompositeFrameworkTransaction.of(
         single("no1"),
         single("no2")
@@ -246,7 +247,7 @@ public void executeCompositeTransaction() throws KhTransactionException {
 
 ### 5. **SequencedTransaction**
 
-- A composite transaction that guarantees execution order.
+- 실행 순서를 보장하는 복합 트랜잭션.
 
 ```java
 @Transactional
@@ -267,7 +268,7 @@ public void executeSequencedTransaction() throws KhTransactionException {
     
     throw new RuntimeException("SequencedTransaction failed");
 
-    // The following code will not execute (due to exception)
+    // 아래 코드는 실행되지 않음 (예외 발생으로 인해)
     SequencedFrameworkTransaction.of(
         single("no1"),
         single("no2")
@@ -279,25 +280,26 @@ public void executeSequencedTransaction() throws KhTransactionException {
 
 ---
 
-## Exception Handling & Limitations
+## 예외 처리와 제한 사항
 
-1. **Failure in Compensating Transaction Execution**
-    - If a compensating transaction fails, it should be logged and managed separately.
+1. **보상 트랜잭션 실행 실패**
+  - 보상 트랜잭션이 실패하면 로그를 남기고 해당 상태를 별도로 관리해야 합니다.
 
-2. **Errors in Callback Transaction Execution**
-    - If a callback transaction fails, consider implementing a retry mechanism or using a message queue.
-
----
-
-## Use Cases
-
-- **E-commerce**: Handling payment approval and cancellation upon failure.
-- **Event-driven Systems**: Sending events to a message broker (Kafka, RabbitMQ) after transaction completion.
-- **Inventory Management**: Managing stock reduction transactions with rollback handling.
+2. **Callback 트랜잭션 실행 중 오류**
+  - Callback 작업이 실패하면 재시도 로직을 구현하거나 별도의 큐를 활용해야 합니다.
 
 ---
 
-With this guide, you can effectively leverage the **KeyHub Distributed Transaction Kit**. Contributions and feedback are always welcome! 🚀
+## 유스 케이스
+
+- **전자상거래**: 결제 승인 및 실패 시 결제 취소 처리.
+- **이벤트 기반 시스템**: 트랜잭션 완료 후 메시지 브로커(Kafka, RabbitMQ)로 이벤트 전송.
+- **재고 관리**: 재고 감소 트랜잭션과 실패 시 복구 처리.
+
+---
+
+위 내용을 기반으로 KeyHub Distributed Transaction Kit을 효과적으로 활용할 수 있습니다. 피드백이나 기여는 언제나 환영합니다! 🚀
+
 
 
 ```mermaid
