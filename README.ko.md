@@ -86,7 +86,7 @@ public class StarterApplication {
 public class TransactionService {
     @Transactional
     public String transactSample() {
-        SingleTransaction utd = SingleFrameworkTransaction.of(() -> {
+        SingleTransaction sut = SingleFrameworkTransaction.of(() -> {
                     String sample = "Hello, Transaction!";
                     log.info(sample);
                     return sample;
@@ -101,7 +101,7 @@ public class TransactionService {
                     log.info(callbackMessage);
                     return callbackMessage;
                 }));
-        return utd.resolve().get(String.class);
+        return sut.resolve().get(String.class);
     }
 }
 ```
@@ -190,7 +190,7 @@ classDiagram
 - Spring 트랜잭션과 통합.
 
 ```java
-SingleTransaction utd() {
+SingleTransaction sut() {
     return SingleFrameworkTransaction.of(() -> {
         String sample = "Hello World!";
         log.info(sample);
@@ -204,7 +204,7 @@ SingleTransaction utd() {
 - REST API 요청과 통합된 트랜잭션.
 
 ```java
-RemoteTransaction utd(String baseUrl) {
+RemoteTransaction sut(String baseUrl) {
     return RemoteFrameworkTransaction.of()
             .get(baseUrl)
             .header("Content-Type", "application/json");
